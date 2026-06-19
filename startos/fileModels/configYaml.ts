@@ -12,7 +12,8 @@ import { sdk } from '../sdk'
  *
  * The `model` block is Hermes' provider routing (see cli-config.yaml.example
  * upstream). `provider` selects the backend ('custom' for any OpenAI-compatible
- * endpoint; 'ollama'/'vllm' are aliases for 'custom'; 'gemini' is named);
+ * endpoint; 'ollama'/'vllm' are aliases for 'custom'; 'gemini' and
+ * 'openai-codex' are named);
  * `base_url`/`api_key` are read from here for custom + the local aliases (the
  * .env OPENAI_BASE_URL path is no longer consulted upstream). Configure Provider
  * owns these four keys; the user's other model.* keys (context_length, …) survive.

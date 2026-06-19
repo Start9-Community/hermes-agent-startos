@@ -5,6 +5,8 @@ import { storeJson } from '../fileModels/store.json'
 import { readDependencyApiKey } from '../publicCredentials'
 import { setDependencies } from '../dependencies'
 import { i18n } from '../i18n'
+import { completeCodexOAuth } from './completeCodexOAuth'
+import { CODEX_DEVICE_URL, requestCodexDeviceCode } from './codexOAuth'
 
 const { InputSpec, Value, Variants } = sdk
 
@@ -50,6 +52,10 @@ const providerVariants = Variants.of({
       model: modelField,
     }),
   },
+  'openai-codex': {
+    name: i18n('OpenAI Codex OAuth'),
+    spec: InputSpec.of({ model: modelField }),
+  },
   gemini: {
     name: i18n('Google Gemini'),
     spec: InputSpec.of({ apiKey: apiKeyField('...'), model: modelField }),
@@ -76,7 +82,7 @@ const inputSpec = InputSpec.of({
   provider: Value.union({
     name: i18n('LLM Provider'),
     description: i18n(
-      'Choose the model backend. Ollama, vLLM and llama.cpp run locally on your server (added as a dependency); the rest are cloud providers requiring an API key.',
+      'Choose the model backend. Ollama, vLLM and llama.cpp run locally on your server (added as a dependency); the rest are cloud providers requiring an API key or OAuth tokens.',
     ),
     default: 'ollama',
     variants: providerVariants,
@@ -89,7 +95,7 @@ export const configureProvider = sdk.Action.withInput(
   async ({ effects }) => ({
     name: i18n('Configure Provider'),
     description: i18n(
-      'Choose and configure the LLM backend Hermes uses (local Ollama/vLLM/llama.cpp, or a cloud provider)',
+      'Choose and configure the LLM backend Hermes uses (local Ollama/vLLM/llama.cpp, or a cloud/OAuth provider)',
     ),
     warning: null,
     allowedStatuses: 'any',
@@ -120,6 +126,13 @@ export const configureProvider = sdk.Action.withInput(
           provider: {
             selection: 'openai-compatible' as const,
             value: { baseUrl, model: modelId },
+          },
+        }
+      case 'openai-codex':
+        return {
+          provider: {
+            selection: 'openai-codex' as const,
+            value: { model: modelId },
           },
         }
       case 'grok':
@@ -159,6 +172,7 @@ export const configureProvider = sdk.Action.withInput(
     // base_url and api_key from config.yaml — the .env OPENAI_BASE_URL path is no
     // longer consulted, and the config api_key is honoured for `custom` and the
     // `ollama`/`vllm` aliases. Gemini is a named provider, keyed from .env.
+    // OpenAI Codex OAuth is a named provider keyed from auth.json.
     let model: {
       provider: string
       base_url: string | undefined
@@ -167,6 +181,9 @@ export const configureProvider = sdk.Action.withInput(
     }
     let backend: 'cloud' | 'ollama' | 'vllm' | 'llama-cpp'
     const envPatch: Record<string, string | undefined> = {}
+    let codexOAuth:
+      | Awaited<ReturnType<typeof requestCodexDeviceCode>>
+      | undefined
 
     if (p.selection === 'ollama') {
       backend = 'ollama'
@@ -208,6 +225,15 @@ export const configureProvider = sdk.Action.withInput(
         api_key: p.value.apiKey,
         default: p.value.model,
       }
+    } else if (p.selection === 'openai-codex') {
+      backend = 'cloud'
+      codexOAuth = await requestCodexDeviceCode(p.value.model)
+      model = {
+        provider: 'openai-codex',
+        base_url: undefined,
+        api_key: undefined,
+        default: p.value.model,
+      }
     } else if (p.selection === 'grok') {
       backend = 'cloud'
       model = {
@@ -231,9 +257,51 @@ export const configureProvider = sdk.Action.withInput(
 
     await configYaml.merge(effects, { model })
     if (Object.keys(envPatch).length > 0) await envFile.merge(effects, envPatch)
-    await storeJson.merge(effects, { backend, provider: p.selection })
+    await storeJson.merge(effects, {
+      backend,
+      provider: p.selection,
+      codexOAuth,
+    })
 
     await setDependencies(effects)
+    if (codexOAuth) {
+      await sdk.action.createOwnTask(effects, completeCodexOAuth, 'critical', {
+        reason: i18n(
+          'Finish the OpenAI Codex browser login so Hermes can make model calls.',
+        ),
+      })
+      return {
+        version: '1' as const,
+        title: i18n('OpenAI Codex OAuth Started'),
+        message: i18n(
+          'Open the browser URL, enter the code, then run Complete OpenAI Codex OAuth.',
+        ),
+        result: {
+          type: 'group' as const,
+          value: [
+            {
+              name: i18n('Browser URL'),
+              description: null,
+              type: 'single' as const,
+              value: CODEX_DEVICE_URL,
+              copyable: true,
+              qr: true,
+              masked: false,
+            },
+            {
+              name: i18n('Device Code'),
+              description: null,
+              type: 'single' as const,
+              value: codexOAuth.userCode,
+              copyable: true,
+              qr: false,
+              masked: false,
+            },
+          ],
+        },
+      }
+    }
+
     await effects.restart()
   },
 )

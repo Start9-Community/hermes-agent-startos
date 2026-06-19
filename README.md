@@ -73,9 +73,10 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 
 1. Install raises a **root-equivalent capability** alert (see Limitations) — Hermes runs an LLM that can execute commands on your behalf.
 2. On first start, the **Configure Provider** action is a critical task: Hermes cannot run until an LLM backend resolves.
-3. Pick a backend in **Configure Provider** (a cloud OpenAI-compatible / Gemini / Grok provider, or local **Ollama** / **vLLM** / **llama.cpp**). Selecting a local backend adds it as a running dependency and wires the backend URL (and key, where published) automatically.
-4. The **LLM Provider** health check turns green once a provider resolves; open the **Web Dashboard** to chat.
-5. *(Optional)* Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server.
+3. Pick a backend in **Configure Provider** (a cloud OpenAI-compatible / Gemini / Grok provider, **OpenAI Codex OAuth**, or local **Ollama** / **vLLM** / **llama.cpp**). Selecting a local backend adds it as a running dependency and wires the backend URL (and key, where published) automatically. Selecting OpenAI Codex OAuth starts a browser device-code login and returns the URL/code.
+4. For OpenAI Codex OAuth, open the returned URL, enter the code, then run **Complete OpenAI Codex OAuth** to exchange the browser approval for Hermes tokens.
+5. The **LLM Provider** health check turns green once a provider resolves; open the **Web Dashboard** to chat.
+6. *(Optional)* Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server.
 
 ---
 
@@ -85,10 +86,11 @@ Hermes is configured through its own files on the data volume, modeled as StartO
 
 - `config.yaml` — the `model` routing block (`provider`, `base_url`, `api_key`, `default`), `skills.external_dirs`, messaging channels.
 - `.env` — provider credentials read by name (e.g. `GEMINI_API_KEY`).
+- `auth.json` — Hermes OAuth provider state, including OpenAI Codex OAuth tokens.
 
 These files are **authoritative and two-way bound**: both the StartOS actions and the dashboard write them, so changes **merge** rather than clobber — config is not re-pushed via env-var overrides on every restart. The **Configure Provider** action writes the `model` routing block (and records the selection so `setupDependencies` can flip the local-backend dependency); everything else is managed in the dashboard.
 
-**Where credentials land:** Hermes host-gates `.env` API keys (an OpenAI key is only sent to OpenAI), so where a backend needs a key the action writes it into `config.yaml`'s `model.api_key` (the path Hermes honours for config-supplied base URLs) rather than `.env` — that covers `custom` cloud endpoints (OpenAI-compatible, Grok) and vLLM, whose key is read automatically from its `public` credentials volume. Ollama and llama.cpp run keyless (llama.cpp's basic auth is enforced only at the OS reverse-proxy edge, so internal `.startos` connections need none). Gemini is a named provider and takes its key from `.env` (`GEMINI_API_KEY`). The action always sets `model.provider` explicitly (never `auto`), so stale keys can't mis-route.
+**Where credentials land:** Hermes host-gates `.env` API keys (an OpenAI key is only sent to OpenAI), so where a backend needs a key the action writes it into `config.yaml`'s `model.api_key` (the path Hermes honours for config-supplied base URLs) rather than `.env` — that covers `custom` cloud endpoints (OpenAI-compatible, Grok) and vLLM, whose key is read automatically from its `public` credentials volume. Ollama and llama.cpp run keyless (llama.cpp's basic auth is enforced only at the OS reverse-proxy edge, so internal `.startos` connections need none). Gemini is a named provider and takes its key from `.env` (`GEMINI_API_KEY`). OpenAI Codex OAuth is a named provider (`openai-codex`) and takes access/refresh tokens from `auth.json` under `providers.openai-codex.tokens`; **Configure Provider** starts OpenAI's browser device-code login, and **Complete OpenAI Codex OAuth** stores the returned tokens. The action always sets `model.provider` explicitly (never `auto`), so stale keys can't mis-route.
 
 `skills.external_dirs` in `config.yaml` points at the image-owned `/opt/startos/skills`, so the managed `start-cli` and `startos-support` skills load without the agent being able to edit them.
 
@@ -117,7 +119,8 @@ Messaging platforms reach the agent through their own webhooks/long-poll, config
 
 | Action | Purpose |
 | ------ | ------- |
-| **Configure Provider** | Select the LLM backend (OpenAI-compatible, Gemini, Grok, or local Ollama/vLLM/llama.cpp) and write it into `config.yaml`/`.env`. Toggles the local-backend dependency. |
+| **Configure Provider** | Select the LLM backend (OpenAI-compatible, OpenAI Codex OAuth, Gemini, Grok, or local Ollama/vLLM/llama.cpp) and write it into `config.yaml`/`.env`/`auth.json`. For OpenAI Codex OAuth, starts the browser device-code login and creates the follow-up completion task. Toggles the local-backend dependency. |
+| **Complete OpenAI Codex OAuth** | Finish a pending OpenAI Codex browser login by polling OpenAI for approval, exchanging the device-code response for tokens, writing `auth.json`, and restarting Hermes. |
 | **Login to StartOS** | Install the StartOS root CA and authenticate the bundled `start-cli` against this server (asks for the master password). **Grants the agent root-equivalent control** — gated behind a warning. |
 
 ---
@@ -200,6 +203,8 @@ image_owned_context:
 provider_config: # written by Configure Provider into config.yaml `model`
   keys: model.provider, model.base_url, model.api_key, model.default
   gemini_key_env: GEMINI_API_KEY # named providers keyed via .env
+  codex_oauth_tokens: auth.json providers.openai-codex.tokens # generated by browser device-code flow
+  codex_oauth_pending: .startos/store.json codexOAuth # temporary device-code state
   vllm_key: read from vllm:public/credentials.json # ollama + llama.cpp are keyless
 dependencies: # optional; flipped to running by Configure Provider
   ollama: ">=0.21.0:0"
@@ -207,6 +212,7 @@ dependencies: # optional; flipped to running by Configure Provider
   llama-cpp: ">=1.0.9544:0"
 actions:
   - Configure Provider
+  - Complete OpenAI Codex OAuth
   - Login to StartOS # grants root-equivalent control
 health_checks:
   - Web Dashboard

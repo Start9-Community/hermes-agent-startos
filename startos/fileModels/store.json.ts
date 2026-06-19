@@ -11,6 +11,15 @@ const shape = z.looseObject({
   backend: z.enum(['cloud', 'ollama', 'vllm', 'llama-cpp']).catch('cloud'),
   // Last Configure Provider selection id, so the action can pre-fill its form.
   provider: z.string().optional(),
+  codexOAuth: z
+    .looseObject({
+      userCode: z.string(),
+      deviceAuthId: z.string(),
+      pollIntervalSeconds: z.number(),
+      expiresAt: z.string(),
+      model: z.string(),
+    })
+    .optional(),
 })
 
 export const storeJson = FileHelper.json(
