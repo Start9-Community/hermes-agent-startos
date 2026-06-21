@@ -31,6 +31,30 @@ from gateway.status import get_running_pid
 sys.exit(0 if get_running_pid() else 1)
 `
 
+// StartOS exec calls launch Hermes directly rather than through upstream's
+// /init wrapper, so pin the image runtime contract here as well.
+const hermesEnv = {
+  HOME: dataDir,
+  HERMES_HOME: dataDir,
+  HERMES_UID: '1000',
+  HERMES_GID: '1000',
+  HERMES_WEB_DIST: '/opt/hermes/hermes_cli/web_dist',
+  HERMES_TUI_DIR: '/opt/hermes/ui-tui',
+  HERMES_WRITE_SAFE_ROOT: dataDir,
+  HERMES_DISABLE_LAZY_INSTALLS: '1',
+  HERMES_GATEWAY_NO_SUPERVISE: '1',
+  NODE_EXTRA_CA_CERTS: '/etc/ssl/certs/ca-certificates.crt',
+  PATH: '/opt/hermes/bin:/opt/hermes/.venv/bin:/opt/data/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+  PLAYWRIGHT_BROWSERS_PATH: '/opt/hermes/.playwright',
+  PYTHONDONTWRITEBYTECODE: '1',
+}
+
+const withHermesEnv = (command: string[]) => [
+  'env',
+  ...Object.entries(hermesEnv).map(([key, value]) => `${key}=${value}`),
+  ...command,
+]
+
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info(i18n('Starting Hermes Agent!'))
 
@@ -43,11 +67,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
     mainMounts(),
     'hermes-sub',
   )
-
-  const env = {
-    HOME: dataDir,
-    NODE_EXTRA_CA_CERTS: '/etc/ssl/certs/ca-certificates.crt',
-  }
 
   const etagPath = `${dataDir}/.startos/knowledge/bundle.etag`
   const tmpPath = `${bundlePath}.tmp`
@@ -88,7 +107,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             '--no-open',
             '--insecure',
           ],
-          env,
+          env: hermesEnv,
           user: 'hermes',
         },
         ready: {
@@ -110,7 +129,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         subcontainer: sub,
         exec: {
           command: ['hermes', 'gateway', 'run'],
-          env,
+          env: hermesEnv,
           user: 'hermes',
         },
         ready: {
@@ -118,7 +137,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
           gracePeriod: 60_000,
           fn: () =>
             sdk.healthCheck.runHealthScript(
-              ['/opt/hermes/.venv/bin/python3', '-c', GATEWAY_PROBE],
+              withHermesEnv([
+                '/opt/hermes/.venv/bin/python3',
+                '-c',
+                GATEWAY_PROBE,
+              ]),
               sub,
               {
                 errorMessage: i18n('The messaging gateway is not running'),
@@ -136,7 +159,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
           gracePeriod: 30_000,
           fn: () =>
             sdk.healthCheck.runHealthScript(
-              ['/opt/hermes/.venv/bin/python3', '-c', PROVIDER_PROBE],
+              withHermesEnv([
+                '/opt/hermes/.venv/bin/python3',
+                '-c',
+                PROVIDER_PROBE,
+              ]),
               sub,
               {
                 errorMessage: i18n(
@@ -160,17 +187,23 @@ export const main = sdk.setupMain(async ({ effects }) => {
               `&& [ -s "${tmpPath}" ] && mv "${tmpPath}" "${bundlePath}"; ` +
               `sleep 86400; done`,
           ],
-          env,
+          env: hermesEnv,
           user: 'hermes',
         },
         ready: {
           display: i18n('Knowledge Bundle'),
           gracePeriod: 30_000,
           fn: () =>
-            sdk.healthCheck.runHealthScript(['test', '-f', bundlePath], sub, {
-              errorMessage: i18n('The support knowledge bundle is not present'),
-              message: () => i18n('The support knowledge bundle is present'),
-            }),
+            sdk.healthCheck.runHealthScript(
+              withHermesEnv(['test', '-f', bundlePath]),
+              sub,
+              {
+                errorMessage: i18n(
+                  'The support knowledge bundle is not present',
+                ),
+                message: () => i18n('The support knowledge bundle is present'),
+              },
+            ),
         },
         requires: [],
       })

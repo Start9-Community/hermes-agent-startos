@@ -1,7 +1,7 @@
 {
   "name": "hermes-agent-startos",
   "scripts": {
-    "build": "rm -rf ./javascript && ncc build startos/index.ts -o ./javascript",
+    "build": "rm -rf ./javascript && ncc build startos/index.ts -o ./javascript && chmod -R a+rX ./javascript",
     "prettier": "prettier --write startos",
     "check": "tsc --noEmit"
   },

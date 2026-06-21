@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2026.6.5:2',
+  version: '2026.6.19:0',
   releaseNotes: {
     en_US:
-      'Add the Anthropic (Claude) provider and pick the model from a per-provider dropdown (or enter a custom id). Fix a first-boot crash where the gateway could not read its hooks directory. Show the OpenAI Codex completion action only while a login is pending.',
+      'Update Hermes Agent to upstream v2026.6.19 (v0.17.0, The Reach Release). Adds the latest upstream dashboard, gateway, model, memory, automation, and messaging improvements while preserving the StartOS provider configuration, managed skills, and first-boot permission fixes.',
     es_ES:
-      'Agrega el proveedor Anthropic (Claude) y elige el modelo desde un menu desplegable por proveedor (o introduce un id personalizado). Corrige un fallo en el primer arranque en el que la puerta de enlace no podia leer su directorio hooks. Muestra la accion de finalizacion de OpenAI Codex solo mientras hay un inicio de sesion pendiente.',
+      'Actualiza Hermes Agent al upstream v2026.6.19 (v0.17.0, The Reach Release). Agrega las ultimas mejoras upstream de panel, gateway, modelos, memoria, automatizacion y mensajeria, manteniendo la configuracion de proveedores de StartOS, las habilidades gestionadas y las correcciones de permisos del primer arranque.',
     de_DE:
-      'Anthropic (Claude)-Anbieter hinzugefuegt; das Modell wird ueber ein Dropdown pro Anbieter gewaehlt (oder eine eigene ID eingegeben). Behebt einen Absturz beim ersten Start, bei dem das Gateway sein hooks-Verzeichnis nicht lesen konnte. Die OpenAI-Codex-Abschlussaktion erscheint nur bei ausstehender Anmeldung.',
+      'Aktualisiert Hermes Agent auf Upstream v2026.6.19 (v0.17.0, The Reach Release). Bringt die neuesten Upstream-Verbesserungen fuer Dashboard, Gateway, Modelle, Speicher, Automatisierung und Messaging, waehrend StartOS-Provider-Konfiguration, verwaltete Skills und Erststart-Berechtigungsfixes erhalten bleiben.',
     pl_PL:
-      'Dodano dostawce Anthropic (Claude) i wybor modelu z listy rozwijanej dla kazdego dostawcy (lub wpisanie wlasnego id). Naprawiono awarie przy pierwszym uruchomieniu, gdy brama nie mogla odczytac swojego katalogu hooks. Akcja finalizacji OpenAI Codex pojawia sie tylko podczas oczekujacego logowania.',
+      'Aktualizuje Hermes Agent do upstream v2026.6.19 (v0.17.0, The Reach Release). Dodaje najnowsze upstreamowe usprawnienia panelu, bramy, modeli, pamieci, automatyzacji i komunikatorow, zachowujac konfiguracje dostawcow StartOS, zarzadzane umiejetnosci i poprawki uprawnien pierwszego uruchomienia.',
     fr_FR:
-      'Ajoute le fournisseur Anthropic (Claude) et permet de choisir le modele dans un menu deroulant par fournisseur (ou de saisir un id personnalise). Corrige un plantage au premier demarrage ou la passerelle ne pouvait pas lire son repertoire hooks. Affiche la finalisation OpenAI Codex uniquement pendant une connexion en attente.',
+      'Met a jour Hermes Agent vers upstream v2026.6.19 (v0.17.0, The Reach Release). Ajoute les dernieres ameliorations upstream du tableau de bord, de la passerelle, des modeles, de la memoire, de l automatisation et de la messagerie, tout en conservant la configuration des fournisseurs StartOS, les competences gerees et les corrections de permissions au premier demarrage.',
   },
   migrations: {
     up: async ({ effects }) => {},

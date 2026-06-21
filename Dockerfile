@@ -3,8 +3,8 @@
 # the official upstream image. We do NOT fork Hermes — the dashboard and gateway
 # are the upstream binaries; StartOS provides auth, config forms, and lifecycle.
 #
-# To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v2026.6.5
-FROM nousresearch/hermes-agent:v2026.6.5@sha256:9ad3b04ec916ea2c2da22358fd43b024c788d74073210695af88bfc2e63869b4
+# To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v2026.6.19
+FROM nousresearch/hermes-agent:v2026.6.19@sha256:9f367c7756ef087661a361536a89f438d57a122b958dc23d82d456b1433e6e9e
 
 ARG STARTOS_VERSION
 
@@ -25,9 +25,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -fsSL "https://github.com/Start9Labs/start-os/releases/download/v${STARTOS_VERSION}/start-cli_$(uname -m)-linux" -o /usr/local/bin/start-cli \
     && chmod +x /usr/local/bin/start-cli
 
-# Keep the hermes venv on PATH for every shell the agent's terminal tool spawns.
-ENV PATH="/opt/hermes/.venv/bin:${PATH}"
-RUN echo 'export PATH="/opt/hermes/.venv/bin:$PATH"' > /etc/profile.d/hermes-venv.sh && \
+# Keep the upstream shim, venv, and user-local bin on PATH for shells the agent
+# spawns. v2026.6.19 uses /opt/hermes/bin/hermes as the docker-exec shim and
+# keeps mutable user installs under /opt/data.
+ENV PATH="/opt/hermes/bin:/opt/hermes/.venv/bin:/opt/data/.local/bin:${PATH}"
+RUN echo 'export PATH="/opt/hermes/bin:/opt/hermes/.venv/bin:/opt/data/.local/bin:$PATH"' > /etc/profile.d/hermes-venv.sh && \
     ln -sf /opt/hermes/.venv/bin/hermes /usr/local/bin/hermes
 
 # Managed context — image-owned so it updates with normal package upgrades and
