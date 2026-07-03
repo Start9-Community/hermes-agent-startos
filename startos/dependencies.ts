@@ -5,9 +5,9 @@ import { configYaml } from './fileModels/configYaml'
 // Only the local runtimes require a dependency; cloud/custom providers need none.
 // (llama.cpp's provider id is `llamacpp`; its package id is `llama-cpp`.)
 const PROVIDER_TO_DEP: Record<string, { dep: string; versionRange: string }> = {
-  ollama: { dep: 'ollama', versionRange: '>=0.21.0:0' },
-  vllm: { dep: 'vllm', versionRange: '>=0.16.0:0.1' },
-  llamacpp: { dep: 'llama-cpp', versionRange: '>=1.0.9544:0' },
+  ollama: { dep: 'ollama', versionRange: '>=0.31.1:1' },
+  vllm: { dep: 'vllm', versionRange: '>=0.23.1-rc.0:10' },
+  llamacpp: { dep: 'llama-cpp', versionRange: '>=1.0.9837:1' },
 }
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {

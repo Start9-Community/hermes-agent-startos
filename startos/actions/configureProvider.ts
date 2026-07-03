@@ -1,3 +1,4 @@
+import { T } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 import { configYaml } from '../fileModels/configYaml'
 import { envFile } from '../fileModels/envFile'
@@ -9,13 +10,33 @@ import { CODEX_DEVICE_URL, requestCodexDeviceCode } from './codexOAuth'
 
 const { InputSpec, Value, Variants } = sdk
 
-// Local-inference backends are auto-wired to the registry packages' addresses
-// (OpenAI-compatible `/v1` paths — Hermes treats ollama/vllm as `custom`).
-const OLLAMA_BASE_URL = 'http://ollama.startos:11434/v1'
-const VLLM_BASE_URL = 'http://vllm.startos:8000/v1'
-const LLAMA_CPP_BASE_URL = 'http://llama-cpp.startos:8080/v1'
 // xAI's API is OpenAI-compatible; routed as `custom` with this base URL.
 const GROK_BASE_URL = 'https://api.x.ai/v1'
+
+// Local-inference dependencies (ollama/vllm/llama-cpp) each export an
+// OpenAI-compatible `api` interface on a MultiHost named `api-multi`. Resolve
+// its plain-HTTP LXC-bridge base URL (e.g. `http://10.0.3.5:11434`) at apply
+// time — the retired `<pkg>.startos` DNS no longer resolves between containers.
+// String-literal ids because these are optional runtime deps, not npm
+// `-startos` packages whose id constants we could import.
+const DEP_API_HOST_ID = 'api-multi'
+const DEP_API_INTERFACE_ID = 'api'
+
+const depApiBaseUrl = (effects: T.Effects, packageId: string) =>
+  sdk.host
+    .get(effects, { hostId: DEP_API_HOST_ID, packageId }, (host) => {
+      const iface =
+        host &&
+        Object.values(host.bindings)
+          .flatMap((b) => Object.values(b.interfaces))
+          .find((i) => i.id === DEP_API_INTERFACE_ID)
+      return iface
+        ? iface.addressInfo
+            .filter({ kind: 'bridge', predicate: (h) => !h.ssl })
+            .format('urlstring')[0]
+        : undefined
+    })
+    .once()
 
 // Curated model catalogs per named cloud provider (exact API model ids → label).
 // Configure Provider sets the *default* model; it can be changed anytime from
@@ -285,17 +306,28 @@ export const configureProvider = sdk.Action.withInput(
     }
     const envPatch: Record<string, string | undefined> = {}
     let codexOAuth:
-      | Awaited<ReturnType<typeof requestCodexDeviceCode>>
-      | undefined
+      Awaited<ReturnType<typeof requestCodexDeviceCode>> | undefined
 
     if (p.selection === 'ollama') {
+      const baseUrl = await depApiBaseUrl(effects, 'ollama')
+      if (!baseUrl) {
+        throw new Error(
+          'Ollama is not yet reachable on the internal network. Install and start Ollama, then run Configure Provider again.',
+        )
+      }
       model = {
         provider: 'ollama',
-        base_url: OLLAMA_BASE_URL,
+        base_url: `${baseUrl}/v1`,
         api_key: undefined,
         default: p.value.model,
       }
     } else if (p.selection === 'vllm') {
+      const baseUrl = await depApiBaseUrl(effects, 'vllm')
+      if (!baseUrl) {
+        throw new Error(
+          'vLLM is not yet reachable on the internal network. Install and start vLLM, then run Configure Provider again.',
+        )
+      }
       const key = await readDependencyApiKey(effects, 'vllm')
       if (!key) {
         throw new Error(
@@ -304,16 +336,22 @@ export const configureProvider = sdk.Action.withInput(
       }
       model = {
         provider: 'vllm',
-        base_url: VLLM_BASE_URL,
+        base_url: `${baseUrl}/v1`,
         api_key: key,
         default: p.value.model,
       }
     } else if (p.selection === 'llama-cpp') {
+      const baseUrl = await depApiBaseUrl(effects, 'llama-cpp')
+      if (!baseUrl) {
+        throw new Error(
+          'llama.cpp is not yet reachable on the internal network. Install and start llama.cpp, then run Configure Provider again.',
+        )
+      }
       // llama.cpp runs keyless; its basic auth is enforced only at the OS
-      // reverse-proxy edge, so internal `.startos` connections need none.
+      // reverse-proxy edge, so internal bridge connections need none.
       model = {
         provider: 'llamacpp',
-        base_url: LLAMA_CPP_BASE_URL,
+        base_url: `${baseUrl}/v1`,
         api_key: undefined,
         default: p.value.model,
       }

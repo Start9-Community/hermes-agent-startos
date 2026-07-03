@@ -1,6 +1,7 @@
 import { installRootCA } from './actions/loginToOs'
 import { configYaml } from './fileModels/configYaml'
 import { i18n } from './i18n'
+import { uiHostId, uiInterfaceId } from './interfaces'
 import { sdk } from './sdk'
 import {
   BUNDLE_URL,
@@ -39,7 +40,32 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // hash is always in place before the dashboard process next reads it.
   await configYaml.read((c) => c.skills?.external_dirs).const(effects)
 
-  const sub = await sdk.SubContainer.of(
+  // The dashboard's own LXC-bridge (lxcbr0) URL for the `ui` interface, e.g.
+  // `http://10.0.3.1:9119/login`. Replaces the retired `hermes-agent.startos:<port>`
+  // DNS name for the in-box health check. The map fn returns just the resolved
+  // URL, so `.const()` re-runs `main` only if that URL changes.
+  const uiUrl = await sdk.host
+    .getOwn(effects, uiHostId, (host) => {
+      const iface = Object.values(host?.bindings ?? {})
+        .flatMap((b) => Object.values(b.interfaces))
+        .find((i) => i.id === uiInterfaceId)
+      return iface
+        ? iface.addressInfo
+            .filter({ kind: 'bridge', predicate: (h) => !h.ssl })
+            .format('urlstring')[0]
+        : undefined
+    })
+    .const()
+
+  // `addressInfo.suffix` is the interface's own path, so `uiUrl` ends in `/login`.
+  // Resolve the probe against the origin rather than appending to it: upstream
+  // matches `/login` as a public *prefix*, so `${uiUrl}/api/status` serves the
+  // login page HTML with a 200. `checkWebUrl` succeeds on any HTTP response, so
+  // that probe would report the dashboard healthy while never reaching its status
+  // endpoint at all.
+  const statusUrl = uiUrl && new URL('/api/status', uiUrl).href
+
+  const sub = sdk.SubContainer.of(
     effects,
     { imageId: 'hermes-agent' },
     mainMounts(),
@@ -118,15 +144,16 @@ export const main = sdk.setupMain(async ({ effects }) => {
           gracePeriod: 60_000,
           fn: () =>
             // `/api/status` is upstream's exact-match public probe path; every
-            // other endpoint now 401s until the probe holds a session.
-            sdk.healthCheck.checkWebUrl(
-              effects,
-              `http://hermes-agent.startos:${dashboardPort}/api/status`,
-              {
-                successMessage: i18n('The dashboard is ready'),
-                errorMessage: i18n('The dashboard is not ready'),
-              },
-            ),
+            // other endpoint 401s behind the auth gate.
+            statusUrl
+              ? sdk.healthCheck.checkWebUrl(effects, statusUrl, {
+                  successMessage: i18n('The dashboard is ready'),
+                  errorMessage: i18n('The dashboard is not ready'),
+                })
+              : Promise.resolve({
+                  result: 'starting' as const,
+                  message: i18n('The dashboard is not ready'),
+                }),
         },
         requires: ['install-root-ca', 'chown'],
       })
