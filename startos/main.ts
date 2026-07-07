@@ -49,6 +49,33 @@ export const main = sdk.setupMain(async ({ effects }) => {
     NODE_EXTRA_CA_CERTS: '/etc/ssl/certs/ca-certificates.crt',
   }
 
+  // `runHealthScript` execs as the image's default user — here root, because the
+  // Dockerfile's last `USER` is root and is never reset. A root-run probe that
+  // does `import hermes_cli` (both probes below do, via runtime_provider and
+  // gateway.status) creates auth-store files on the data volume — `auth.lock`,
+  // `auth.json` — owned by root. That EACCES-breaks the uid-1000 gateway's
+  // short-lived Nous/OAuth token refresh, dropping inference until the next boot
+  // chown re-owns the files (issue #6). Run the probes as `hermes` (uid 1000),
+  // the same user the daemons run as, so whatever they touch on the volume stays
+  // uid-1000-owned. Mirrors runHealthScript otherwise (30s exec timeout → SIGKILL
+  // → failure).
+  const runProbeAsHermes = async (
+    script: string,
+    message: string,
+    errorMessage: string,
+  ) => {
+    try {
+      await sub.execFail(['/opt/hermes/.venv/bin/python3', '-c', script], {
+        user: 'hermes',
+      })
+      return { result: 'success' as const, message }
+    } catch (e) {
+      console.warn(errorMessage)
+      console.warn(String(e))
+      return { result: 'failure' as const, message: errorMessage }
+    }
+  }
+
   const etagPath = `${dataDir}/.startos/knowledge/bundle.etag`
   const tmpPath = `${bundlePath}.tmp`
 
@@ -117,13 +144,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
           display: i18n('Messaging Gateway'),
           gracePeriod: 60_000,
           fn: () =>
-            sdk.healthCheck.runHealthScript(
-              ['/opt/hermes/.venv/bin/python3', '-c', GATEWAY_PROBE],
-              sub,
-              {
-                errorMessage: i18n('The messaging gateway is not running'),
-                message: () => i18n('The messaging gateway is running'),
-              },
+            runProbeAsHermes(
+              GATEWAY_PROBE,
+              i18n('The messaging gateway is running'),
+              i18n('The messaging gateway is not running'),
             ),
         },
         requires: ['install-root-ca', 'chown'],
@@ -135,15 +159,12 @@ export const main = sdk.setupMain(async ({ effects }) => {
           display: i18n('LLM Provider'),
           gracePeriod: 30_000,
           fn: () =>
-            sdk.healthCheck.runHealthScript(
-              ['/opt/hermes/.venv/bin/python3', '-c', PROVIDER_PROBE],
-              sub,
-              {
-                errorMessage: i18n(
-                  'No LLM provider configured — run the Configure Provider action',
-                ),
-                message: () => i18n('An LLM provider is configured'),
-              },
+            runProbeAsHermes(
+              PROVIDER_PROBE,
+              i18n('An LLM provider is configured'),
+              i18n(
+                'No LLM provider configured — run the Configure Provider action',
+              ),
             ),
         },
         requires: [],

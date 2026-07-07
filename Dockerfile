@@ -3,8 +3,8 @@
 # the official upstream image. We do NOT fork Hermes — the dashboard and gateway
 # are the upstream binaries; StartOS provides auth, config forms, and lifecycle.
 #
-# To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v2026.6.19
-FROM nousresearch/hermes-agent:v2026.6.19@sha256:9f367c7756ef087661a361536a89f438d57a122b958dc23d82d456b1433e6e9e
+# To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v2026.7.1
+FROM nousresearch/hermes-agent:v2026.7.1@sha256:b6c019227889e6675424a2b6223b2cafdd36bf7d1048d1ddd8e043b880d6cc0f
 
 ARG STARTOS_VERSION
 
@@ -42,13 +42,13 @@ RUN groupmod -o -g 1000 hermes 2>/dev/null || true && \
     usermod -u 1000 -g 1000 -d /opt/data -s /bin/bash hermes 2>/dev/null || true
 
 # Own the Hermes home scaffolding (hooks/, cron/, sessions/, …) as uid 1000.
-# ensure_hermes_home() runs on every `import hermes_cli` — including StartOS's
-# root-run health probes (the provider/gateway liveness checks) — and creates
-# those subdirs owned by the running uid (root, for the probes) unless these are
-# set, in which case it chowns each created dir to them (upstream #34107). Without
-# this the hermes-user gateway gets EACCES on $HOME/hooks on the FIRST boot and
-# crash-loops until a later boot's chown -R repairs it. Image-wide (not on the
-# StartOS daemon env) so the root probes inherit it too.
+# ensure_hermes_home() runs on every `import hermes_cli` and creates those subdirs
+# owned by the running uid, chowning each to these when set (upstream #34107).
+# StartOS's daemons AND its health probes now all run as uid 1000 (the probes were
+# the one root-context `import hermes_cli` left — see startos/main.ts), so this is
+# no longer load-bearing; keep it as a belt-and-suspenders net so any future
+# root-context import can't leave root-owned dirs that EACCES the hermes-user
+# gateway on $HOME/hooks and crash-loop it. Image-wide so every context inherits it.
 ENV HERMES_UID=1000 \
     HERMES_GID=1000
 
