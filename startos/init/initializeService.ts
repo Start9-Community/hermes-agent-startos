@@ -14,7 +14,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
   await startCliConfigYaml.merge(effects, { host: `https://${osIp}` })
 
   // Wire the image-owned managed skills into Hermes' config on every install/upgrade.
-  // (looseObject merge preserves any skills the user/dashboard added elsewhere.)
+  // (the loose merge preserves any skills the user/dashboard added elsewhere.)
   await configYaml.merge(effects, {
     skills: { external_dirs: [skillsDir] },
   })

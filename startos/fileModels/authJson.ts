@@ -6,14 +6,14 @@ import { sdk } from '../sdk'
  * only writes the OpenAI Codex singleton token entry and active provider; loose
  * objects preserve rotated token metadata, credential pools, and other providers.
  */
-const shape = z.looseObject({
+const shape = z.object({
   version: z.number().optional(),
   providers: z
-    .looseObject({
+    .object({
       'openai-codex': z
-        .looseObject({
+        .object({
           tokens: z
-            .looseObject({
+            .object({
               access_token: z.string().optional(),
               refresh_token: z.string().optional(),
             })

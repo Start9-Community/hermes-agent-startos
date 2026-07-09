@@ -7,6 +7,7 @@ import { sdk } from '../sdk'
 import { initializeService } from './initializeService'
 import { installTasks } from './installTasks'
 import { reconcileCodexTask } from './reconcileCodexTask'
+import { watchCredentials } from './watchCredentials'
 
 export const init = sdk.setupInit(
   restoreInit,
@@ -16,6 +17,7 @@ export const init = sdk.setupInit(
   actions,
   installTasks,
   initializeService,
+  watchCredentials,
   reconcileCodexTask,
 )
 

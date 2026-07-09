@@ -34,7 +34,9 @@ sys.exit(0 if get_running_pid() else 1)
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info(i18n('Starting Hermes Agent!'))
 
-  // Re-run main when the managed skills wiring changes.
+  // Re-run main when the managed skills wiring changes. The dashboard password
+  // needs no watch here: Set Dashboard Password is `only-stopped`, so the new
+  // hash is always in place before the dashboard process next reads it.
   await configYaml.read((c) => c.skills?.external_dirs).const(effects)
 
   const sub = await sdk.SubContainer.of(
@@ -99,12 +101,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
       .addDaemon('dashboard', {
         subcontainer: sub,
         exec: {
-          // `--insecure` because StartOS authenticates the `ui` interface itself:
-          // on a non-loopback bind the dashboard's own OAuth gate otherwise fails
-          // closed (no provider registered). The dashboard injects its session
-          // token into the served SPA, so the proxied browser authenticates
-          // automatically; a 0.0.0.0 bind accepts any Host header (no allowed-hosts
-          // flag needed). Mirrors upstream's own container command.
           command: [
             'hermes',
             'dashboard',
@@ -113,7 +109,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
             '--port',
             dashboardPort.toString(),
             '--no-open',
-            '--insecure',
           ],
           env,
           user: 'hermes',
@@ -122,9 +117,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
           display: i18n('Web Dashboard'),
           gracePeriod: 60_000,
           fn: () =>
+            // `/api/status` is upstream's exact-match public probe path; every
+            // other endpoint now 401s until the probe holds a session.
             sdk.healthCheck.checkWebUrl(
               effects,
-              `http://hermes-agent.startos:${dashboardPort}`,
+              `http://hermes-agent.startos:${dashboardPort}/api/status`,
               {
                 successMessage: i18n('The dashboard is ready'),
                 errorMessage: i18n('The dashboard is not ready'),
