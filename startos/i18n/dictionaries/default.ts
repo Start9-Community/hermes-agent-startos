@@ -62,6 +62,13 @@ const dict = {
   'Hermes will lose StartOS administrative access until you run Login to StartOS again.': 58,
   'StartOS Access Revoked': 59,
   "Hermes' stored start-cli authentication was removed. Run Login to StartOS to grant access again.": 60,
+  'Set Dashboard Password': 61,
+  '<p>Generate a new random password for signing in to the Hermes web dashboard.</p><p>This action can only run while Hermes is stopped, so the dashboard loads the new password the next time it starts.</p>': 62,
+  Username: 63,
+  Password: 64,
+  'Hermes Dashboard Login': 65,
+  'Use these credentials to sign in to the Hermes web dashboard. This is the only time the password is shown — it is not stored in plaintext.': 66,
+  'Set a password before signing in to the Hermes dashboard': 67,
 } as const
 
 /**

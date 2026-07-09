@@ -11,7 +11,7 @@
 
 [Hermes Agent](https://hermes-agent.nousresearch.com) is an open-source (MIT) autonomous AI agent from [Nous Research](https://nousresearch.com). It chats, runs tools, browses the web, edits files, and connects to messaging platforms (Telegram, Discord, Signal, Slack, Matrix, and more). It improves the longer it runs — building reusable skills, storing preferences, and carrying memory across sessions.
 
-StartOS supplies what Hermes would otherwise need a wrapper for — authenticated network access, configuration forms, health visibility, and lifecycle management — so this package runs the upstream `hermes dashboard` and `hermes gateway` binaries directly, with only a thin StartOS layer added on top (root CA, `start-cli`, managed skills, and a baseline knowledge bundle).
+StartOS supplies what Hermes would otherwise need a wrapper for — network addressing, configuration forms, health visibility, and lifecycle management — so this package runs the upstream `hermes dashboard` and `hermes gateway` binaries directly, with only a thin StartOS layer added on top (root CA, `start-cli`, managed skills, and a baseline knowledge bundle). Dashboard authentication is Hermes' own; StartOS seeds the credential (see [Network Access and Interfaces](#network-access-and-interfaces)).
 
 ---
 
@@ -47,7 +47,7 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 | --------- | ---- | ------- | ------- |
 | `install-root-ca` | oneshot | (installs the StartOS root CA into the image trust store) | Lets `start-cli` and the agent reach the local box over HTTPS |
 | `chown` | oneshot | `chown -R 1000:1000 /opt/data` | Hand the data dir to the `hermes` user (uid/gid 1000) |
-| `dashboard` | daemon | `hermes dashboard --host 0.0.0.0 --port 9119 --no-open --insecure` | Web UI: chat, config, sessions/memory, skills, logs, analytics, cron |
+| `dashboard` | daemon | `hermes dashboard --host 0.0.0.0 --port 9119 --no-open` | Web UI: chat, config, sessions/memory, skills, logs, analytics, cron |
 | `gateway` | daemon | `hermes gateway run` | Messaging-platform integrations (Telegram, Discord, Signal, …), configured in the dashboard |
 | `bundle-refresh` | daemon | ETag'd `curl` loop (24h) against the support knowledge bundle | Keeps the `startos-support` knowledge current |
 
@@ -72,12 +72,13 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 ## Installation and First-Run Flow
 
 1. Install raises a **root-equivalent capability** alert (see Limitations) — Hermes runs an LLM that can execute commands on your behalf.
-2. On first start, the **Configure Provider** action is a critical task: Hermes cannot run until an LLM backend resolves.
-3. Pick a backend in **Configure Provider** (a cloud OpenAI-compatible / Gemini / Grok / Anthropic provider, **OpenAI Codex OAuth**, or local **Ollama** / **vLLM** / **llama.cpp**). Selecting a local backend adds it as a running dependency and wires the backend URL (and key, where published) automatically. Selecting OpenAI Codex OAuth starts a browser device-code login and returns the URL/code. For the named cloud providers the model field is a **default-model dropdown** (with a Custom field for ids not yet listed); the chosen model is the default and is changeable later from within Hermes via `/model`.
-4. For OpenAI Codex OAuth, open the returned URL, enter the code, then run **Complete OpenAI Codex OAuth** to exchange the browser approval for Hermes tokens.
-5. The **LLM Provider** health check turns green once a provider resolves; open the **Web Dashboard** to chat.
-6. *(Optional)* Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. The master password is used for that action run; `start-cli` stores its auth cookie on the data volume.
-7. Run **Revoke StartOS Access** any time you want to remove Hermes' stored `start-cli` authentication without uninstalling the service.
+2. **Set Dashboard Password** is a critical task whenever no password hash is set — the service stays stopped until it is run. It returns the password once (username `admin`); save it. Upgrades from a release that served the dashboard unauthenticated get the same task.
+3. On first start, the **Configure Provider** action is a critical task: Hermes cannot run until an LLM backend resolves.
+4. Pick a backend in **Configure Provider** (a cloud OpenAI-compatible / Gemini / Grok / Anthropic provider, **OpenAI Codex OAuth**, or local **Ollama** / **vLLM** / **llama.cpp**). Selecting a local backend adds it as a running dependency and wires the backend URL (and key, where published) automatically. Selecting OpenAI Codex OAuth starts a browser device-code login and returns the URL/code. For the named cloud providers the model field is a **default-model dropdown** (with a Custom field for ids not yet listed); the chosen model is the default and is changeable later from within Hermes via `/model`.
+5. For OpenAI Codex OAuth, open the returned URL, enter the code, then run **Complete OpenAI Codex OAuth** to exchange the browser approval for Hermes tokens.
+6. The **LLM Provider** health check turns green once a provider resolves; open the **Web Dashboard** to chat.
+7. *(Optional)* Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. The master password is used for that action run; `start-cli` stores its auth cookie on the data volume.
+8. Run **Revoke StartOS Access** any time you want to remove Hermes' stored `start-cli` authentication without uninstalling the service.
 
 ---
 
@@ -105,7 +106,17 @@ These files are **authoritative and two-way bound**: both the StartOS actions an
 
 Messaging platforms reach the agent through their own webhooks/long-poll, configured in the dashboard. Hermes' **OpenAI-compatible API server** (an HTTP endpoint that lets external frontends like Open WebUI use Hermes as a model) is one such gateway platform — it is **off by default** and user-enabled from the dashboard's messaging/channels config, where Hermes requires an `API_SERVER_KEY` before it will start (it can dispatch terminal-capable agent work). This package does **not** force it on or export it as a StartOS interface; enabling and exposing it is left to the user.
 
-**Authentication:** the dashboard runs with `--insecure` because StartOS already authenticates the `ui` interface. Without it the dashboard's own OAuth gate fails closed on the non-loopback (`0.0.0.0`) bind. The dashboard injects its session token into the served SPA, so the StartOS-proxied browser authenticates to the API automatically — no extra login.
+**Authentication:** the dashboard carries the user's LLM API keys, the agent's terminal tool, and a `start-cli` that can administer this server, and StartOS does **not** authenticate a bound port unless the package asks it to (`addSsl.auth`). This package does not; the dashboard's own login is the gate. That gate is also what lets the dashboard bind at all — Hermes refuses a non-loopback bind with no auth provider registered.
+
+Follows the [Prompt User to Create Admin Credentials](https://docs.start9.com/packaging/recipe-admin-credentials.html) recipe. `init/watchCredentials.ts` watches `config.yaml`'s `dashboard.basic_auth.password_hash` and raises a **critical** task when it is unset, which holds the service stopped until the user runs **Set Dashboard Password**. That action is the only place a credential is generated or written: it calls `utils.getDefaultString()`, writes `username` + `password_hash`, and returns the plaintext once. Nothing stores the plaintext. It is `allowedStatuses: 'only-stopped'`, so the new hash is always in place before the dashboard next reads it — no restart watch in `main`.
+
+`hermesPasswordHash()` in `startos/utils.ts` reproduces upstream's `scrypt$N$r$p$<salt>$<key>` encoding (read from `plugins/dashboard_auth/basic.hash_password`, round-tripped against that module's `_verify_password` in both directions, and confirmed with a real login), so setting a password needs no subcontainer.
+
+The action also writes `dashboard.basic_auth.secret`, the key Hermes signs session tokens with. Unset, Hermes mints a per-process key and every restart signs all users out. Because it is minted fresh on each password set, a reset revokes every live session — otherwise a session opened with a leaked password would outlive the reset, up to `session_ttl_seconds` (12h default).
+
+> Do **not** reintroduce `--insecure`. Through 2026.6.19 it disabled the auth gate and served the dashboard unauthenticated to the whole local network; as of upstream 2026.7.1 it is a documented no-op.
+
+The `ui` interface points at `/login` rather than `/`, working around an upstream auto-SSO bug — see [`TODO.md`](./TODO.md).
 
 **Access methods:**
 
@@ -120,6 +131,7 @@ Messaging platforms reach the agent through their own webhooks/long-poll, config
 
 | Action | Purpose |
 | ------ | ------- |
+| **Set Dashboard Password** | Generate a new random Web Dashboard password, write its scrypt hash to `config.yaml`'s `dashboard.basic_auth`, and return it once. Covers first-set and rotation. `only-stopped`. |
 | **Configure Provider** | Select the LLM backend (OpenAI-compatible, OpenAI Codex OAuth, Gemini, Grok, Anthropic, or local Ollama/vLLM/llama.cpp) and write it into `config.yaml`/`.env`/`auth.json`. For OpenAI Codex OAuth, starts the browser device-code login and creates the follow-up completion task. Toggles the local-backend dependency. |
 | **Complete OpenAI Codex OAuth** | Finish a pending OpenAI Codex browser login by polling OpenAI for approval, exchanging the device-code response for tokens, writing `auth.json`, and restarting Hermes. |
 | **Login to StartOS** | Install the StartOS root CA and authenticate the bundled `start-cli` against this server (asks for the master password). **Grants the agent root-equivalent control** — gated behind a warning. |
@@ -153,7 +165,7 @@ All are declared `optional` in the manifest and flipped to **running** dependenc
 
 | Check | Method | Messages |
 | ----- | ------ | -------- |
-| Web Dashboard | `checkWebUrl` on `:9119` | Success: "The dashboard is ready" / Error: "The dashboard is not ready" |
+| Web Dashboard | `checkWebUrl` on `:9119/api/status` — upstream's exact-match public probe path; every other endpoint 401s behind the auth gate | Success: "The dashboard is ready" / Error: "The dashboard is not ready" |
 | Messaging Gateway | gateway-process liveness via upstream `gateway.status.get_running_pid` (the signal the dashboard itself uses) | Success: "The messaging gateway is running" / Error: "The messaging gateway is not running" |
 | LLM Provider | Runs Hermes' `resolve_runtime_provider()` in the venv | Success: "An LLM provider is configured" / Error: "No LLM provider configured — run the Configure Provider action" |
 | Knowledge Bundle | `test -f` on the live bundle | Success: "The support knowledge bundle is present" / Error: "The support knowledge bundle is not present" |

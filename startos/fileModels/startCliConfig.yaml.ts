@@ -3,7 +3,7 @@ import { sdk } from '../sdk'
 
 // start-cli config: <data>/.startos/config.yaml. Only the host is set by us
 // (seeded from the OS IP at init); start-cli auth login writes the rest.
-const shape = z.looseObject({
+const shape = z.object({
   host: z.string().optional(),
 })
 
