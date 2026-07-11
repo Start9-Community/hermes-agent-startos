@@ -35,4 +35,7 @@ python3 /opt/startos/skills/startos-support/docs-search.py issues bitcoind
 3. Check `issues` for known problems before giving troubleshooting advice.
 4. Answer from the retrieved content. **Do not invent** page titles or facts not present in the bundle.
 
-> Scope note: the bundle covers StartOS, StartTunnel, and packages/upstream docs. It does **not** include the Packaging book or Bitcoin Guides — say so if asked about s9pk packaging internals rather than guessing.
+> Scope note: the bundle covers StartOS, StartTunnel, and packages/upstream docs. It does **not** include the Packaging/SDK book or Bitcoin Guides — don't answer those from this bundle.
+>
+> - **s9pk packaging / SDK questions:** point the user to the packaging guide at <https://docs.start9.com/packaging>. The modern flow is workspace-first: `start-cli s9pk init-workspace` scaffolds an AI-ready workspace (guide + `@start9labs/start-sdk` 2.0 + a build-key), then `start-cli s9pk init-package "<Name>"` scaffolds a package with a `TODO.md` checklist to work top to bottom. Use the **start-cli** skill for the packaging CLI commands (`s9pk`, `registry`).
+> - **Bitcoin setup questions:** point to the Bitcoin Guides on the Start9 docs site.
