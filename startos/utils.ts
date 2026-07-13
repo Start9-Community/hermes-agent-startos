@@ -44,7 +44,7 @@ export const baselineBundlePath = '/opt/startos/knowledge/bundle.json'
 export const bundlePath = `${dataDir}/.startos/knowledge/bundle.json`
 
 // Upstream Hermes version this package wraps (mirror of the pinned image tag).
-export const HERMES_VERSION = '2026.7.1'
+export const HERMES_VERSION = '2026.7.7.2'
 
 // StartOS release whose start-cli binary the image installs (see UPDATING.md).
 export const STARTOS_VERSION = '0.4.0-beta.9'
