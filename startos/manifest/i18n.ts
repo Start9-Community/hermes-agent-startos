@@ -22,16 +22,3 @@ export const long = {
   fr_FR:
     "Hermes Agent est un agent IA autonome et open-source de Nous Research. Il discute, exécute des outils, navigue sur le web, édite des fichiers et se connecte à des plateformes de messagerie (Telegram, Discord, Signal, Slack, Matrix, et plus). Il s'améliore au fur et à mesure qu'il fonctionne — en créant des compétences réutilisables, en stockant des préférences et en conservant la mémoire d'une session à l'autre. Sur StartOS, il exécute l'image upstream officielle avec un tableau de bord web (chat + gestion), un backend LLM local optionnel (Ollama, vLLM ou llama.cpp) et des compétences adaptées à StartOS pour l'administration et le support du serveur.",
 }
-
-export const installAlert = {
-  en_US:
-    'Use with caution. Hermes runs an LLM of your choosing that can execute commands on your behalf. Granting it start-cli access (the "Login to StartOS" action) gives it root-equivalent control of this server — it could run destructive commands or uninstall other services. Do NOT install on a server holding important data or keys (e.g. LND or CLN). When using a cloud LLM provider, your prompts and context leave the device.',
-  es_ES:
-    'Use con precaución. Hermes ejecuta un LLM de su elección que puede ejecutar comandos en su nombre. Concederle acceso a start-cli (la acción "Iniciar sesión en StartOS") le otorga control equivalente a root de este servidor: podría ejecutar comandos destructivos o desinstalar otros servicios. NO lo instale en un servidor que contenga datos o claves importantes (p. ej. LND o CLN). Al usar un proveedor de LLM en la nube, sus indicaciones y su contexto salen del dispositivo.',
-  de_DE:
-    'Mit Vorsicht verwenden. Hermes führt ein LLM Ihrer Wahl aus, das in Ihrem Namen Befehle ausführen kann. Wenn Sie ihm start-cli-Zugriff gewähren (die Aktion „Bei StartOS anmelden“), erhält es root-äquivalente Kontrolle über diesen Server – es könnte destruktive Befehle ausführen oder andere Dienste deinstallieren. Installieren Sie es NICHT auf einem Server mit wichtigen Daten oder Schlüsseln (z. B. LND oder CLN). Bei Verwendung eines Cloud-LLM-Anbieters verlassen Ihre Eingaben und Ihr Kontext das Gerät.',
-  pl_PL:
-    'Używaj z ostrożnością. Hermes uruchamia wybrany przez Ciebie LLM, który może wykonywać polecenia w Twoim imieniu. Przyznanie mu dostępu do start-cli (akcja „Zaloguj się do StartOS“) daje mu kontrolę równoważną root nad tym serwerem — może uruchamiać destrukcyjne polecenia lub odinstalowywać inne usługi. NIE instaluj na serwerze przechowującym ważne dane lub klucze (np. LND lub CLN). Podczas korzystania z chmurowego dostawcy LLM Twoje podpowiedzi i kontekst opuszczają urządzenie.',
-  fr_FR:
-    "À utiliser avec prudence. Hermes exécute un LLM de votre choix qui peut exécuter des commandes en votre nom. Lui accorder l'accès à start-cli (l'action « Se connecter à StartOS ») lui donne un contrôle équivalent à root sur ce serveur — il pourrait exécuter des commandes destructrices ou désinstaller d'autres services. N'installez PAS sur un serveur contenant des données ou des clés importantes (par ex. LND ou CLN). Lors de l'utilisation d'un fournisseur LLM cloud, vos instructions et votre contexte quittent l'appareil.",
-}

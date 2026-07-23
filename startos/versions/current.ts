@@ -1,18 +1,33 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2026.7.1:1',
+  version: '2026.7.20:0',
   releaseNotes: {
-    en_US:
-      'Security fix: the Hermes dashboard now requires a login. Earlier releases launched it with `--insecure`, which served the dashboard — your LLM API keys, the agent’s terminal tool, and a start-cli that can administer this server — to anyone on your local network with no authentication at all. Upstream’s 2026.7.1 hardening turned `--insecure` into a no-op and the dashboard refused to start rather than expose itself, which is why 2026.7.1:0 failed to boot. This release stops passing that flag and uses Hermes’ own login instead. Run the new **Set Dashboard Password** action to generate a password (username `admin`); it is shown once and never stored in plaintext, and Hermes stays stopped until you set one. Run the same action any time to rotate it. The Web Dashboard link now opens the login page.',
-    es_ES:
-      'Corrección de seguridad: el panel de Hermes ahora requiere iniciar sesión. Las versiones anteriores lo lanzaban con `--insecure`, lo que servía el panel —sus claves de API de LLM, la herramienta de terminal del agente y un start-cli capaz de administrar este servidor— a cualquiera en su red local sin autenticación alguna. El refuerzo de seguridad de 2026.7.1 convirtió `--insecure` en una operación sin efecto y el panel se negó a arrancar en lugar de exponerse, por lo que 2026.7.1:0 no llegaba a iniciarse. Esta versión deja de pasar esa opción y usa el propio inicio de sesión de Hermes. Ejecute la nueva acción **Establecer la contraseña del panel** para generar una contraseña (usuario `admin`); se muestra una sola vez y nunca se almacena en texto plano, y Hermes permanece detenido hasta que establezca una. Ejecute la misma acción cuando quiera para rotarla. El enlace del panel web ahora abre la página de inicio de sesión.',
-    de_DE:
-      'Sicherheitskorrektur: Das Hermes-Dashboard erfordert jetzt eine Anmeldung. Frühere Versionen starteten es mit `--insecure` und lieferten das Dashboard — Ihre LLM-API-Schlüssel, das Terminal-Werkzeug des Agenten und ein start-cli, das diesen Server administrieren kann — völlig ohne Authentifizierung an jeden im lokalen Netzwerk aus. Die Härtung in 2026.7.1 machte `--insecure` wirkungslos, und das Dashboard verweigerte den Start, statt sich preiszugeben; deshalb startete 2026.7.1:0 nicht. Diese Version übergibt das Flag nicht mehr und nutzt stattdessen die eigene Anmeldung von Hermes. Führen Sie die neue Aktion **Dashboard-Passwort festlegen** aus, um ein Passwort zu erzeugen (Benutzername `admin`); es wird nur einmal angezeigt und niemals im Klartext gespeichert, und Hermes bleibt gestoppt, bis Sie eines festlegen. Dieselbe Aktion rotiert es jederzeit. Der Link zum Web-Dashboard öffnet nun die Anmeldeseite.',
-    pl_PL:
-      'Poprawka bezpieczeństwa: panel Hermesa wymaga teraz logowania. Wcześniejsze wydania uruchamiały go z opcją `--insecure`, co udostępniało panel — klucze API do modeli, narzędzie terminala agenta oraz start-cli zdolne administrować tym serwerem — każdemu w sieci lokalnej całkowicie bez uwierzytelniania. Wzmocnienie zabezpieczeń w 2026.7.1 sprawiło, że `--insecure` przestało cokolwiek robić, a panel odmówił uruchomienia zamiast się wystawić — dlatego 2026.7.1:0 nie startowało. To wydanie nie przekazuje już tej opcji i korzysta z własnego logowania Hermesa. Uruchom nową akcję **Ustaw hasło panelu**, aby wygenerować hasło (nazwa użytkownika `admin`); jest pokazywane tylko raz i nigdy nie jest przechowywane jawnym tekstem, a Hermes pozostaje zatrzymany, dopóki go nie ustawisz. Tę samą akcję uruchom w dowolnej chwili, aby je zmienić. Odnośnik panelu internetowego otwiera teraz stronę logowania.',
-    fr_FR:
-      'Correctif de sécurité : le tableau de bord de Hermes exige désormais une connexion. Les versions précédentes le lançaient avec `--insecure`, ce qui exposait le tableau de bord — vos clés d’API de modèles, l’outil terminal de l’agent et un start-cli capable d’administrer ce serveur — à quiconque sur votre réseau local, sans aucune authentification. Le renforcement de 2026.7.1 a rendu `--insecure` sans effet et le tableau de bord a refusé de démarrer plutôt que de s’exposer : c’est pourquoi 2026.7.1:0 ne démarrait pas. Cette version cesse de passer cette option et utilise la propre connexion de Hermes. Exécutez la nouvelle action **Définir le mot de passe du tableau de bord** pour générer un mot de passe (nom d’utilisateur `admin`) ; il n’est affiché qu’une fois et jamais stocké en clair, et Hermes reste arrêté tant que vous n’en avez pas défini un. Exécutez la même action à tout moment pour le renouveler. Le lien du tableau de bord web ouvre désormais la page de connexion.',
+    en_US: `Updated Hermes Agent to 2026.7.20, picking up upstream dashboard, gateway, provider, and stability fixes since 2026.7.7.2.
+
+This release also migrates the package to start-sdk 2.0 (requires StartOS 0.4.0-beta.10 or later).
+
+Release: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
+    es_ES: `Actualiza Hermes Agent a 2026.7.20, incorporando las correcciones del panel, la pasarela, los proveedores y la estabilidad publicadas en upstream desde la versión 2026.7.7.2.
+
+Esta versión también migra el paquete a start-sdk 2.0 (requiere StartOS 0.4.0-beta.10 o posterior).
+
+Versión: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
+    de_DE: `Aktualisiert Hermes Agent auf 2026.7.20 und übernimmt die seit 2026.7.7.2 im Upstream veröffentlichten Korrekturen an Dashboard, Gateway, Anbietern und Stabilität.
+
+Diese Version stellt das Paket außerdem auf start-sdk 2.0 um (erfordert StartOS 0.4.0-beta.10 oder neuer).
+
+Veröffentlichung: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
+    pl_PL: `Aktualizuje Hermes Agent do 2026.7.20, przejmując opublikowane w upstream od wersji 2026.7.7.2 poprawki panelu, bramy, dostawców oraz stabilności.
+
+Ta wersja przenosi też pakiet na start-sdk 2.0 (wymaga StartOS 0.4.0-beta.10 lub nowszego).
+
+Wydanie: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
+    fr_FR: `Met à jour Hermes Agent vers 2026.7.20, en intégrant les corrections du tableau de bord, de la passerelle, des fournisseurs et de la stabilité publiées en amont depuis la version 2026.7.7.2.
+
+Cette version fait également passer le paquet à start-sdk 2.0 (nécessite StartOS 0.4.0-beta.10 ou une version ultérieure).
+
+Version : https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
   },
   migrations: {
     up: async ({ effects }) => {},

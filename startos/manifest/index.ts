@@ -1,6 +1,6 @@
 import { setupManifest } from '@start9labs/start-sdk'
 import { STARTOS_VERSION } from '../utils'
-import { installAlert, long, short } from './i18n'
+import { long, short } from './i18n'
 
 export const manifest = setupManifest({
   id: 'hermes-agent',
@@ -24,9 +24,6 @@ export const manifest = setupManifest({
       },
       arch: ['x86_64', 'aarch64'],
     },
-  },
-  alerts: {
-    install: installAlert,
   },
   // Declared optional here; setupDependencies (dependencies.ts) flips them to
   // `running` deps based on the Configure Provider selection.
