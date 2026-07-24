@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2026.7.20:0',
+  version: '2026.7.20:1',
   releaseNotes: {
     en_US: `Updated Hermes Agent to 2026.7.20, picking up upstream dashboard, gateway, provider, and stability fixes since 2026.7.7.2.
 
