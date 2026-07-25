@@ -35,21 +35,21 @@ StartOS supplies what Hermes would otherwise need a wrapper for — network addr
 
 ## Image and Container Runtime
 
-| Property      | Value                                                                 |
-| ------------- | --------------------------------------------------------------------- |
-| Base image    | `nousresearch/hermes-agent` (official upstream, pinned by digest)     |
+| Property      | Value                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Base image    | `nousresearch/hermes-agent` (official upstream, pinned by digest)                                                 |
 | StartOS layer | StartOS root CA + `start-cli`, `git`/`jq`/`ripgrep`, managed skills, baseline knowledge bundle (see `Dockerfile`) |
-| Architectures | x86_64, aarch64                                                       |
+| Architectures | x86_64, aarch64                                                                                                   |
 
 All containers share one subcontainer of the `main` volume. The runtime is composed in `startos/main.ts`:
 
-| Component | Kind | Command | Purpose |
-| --------- | ---- | ------- | ------- |
-| `install-root-ca` | oneshot | (installs the StartOS root CA into the image trust store) | Lets `start-cli` and the agent reach the local box over HTTPS |
-| `chown` | oneshot | `chown -R 1000:1000 /opt/data` | Hand the data dir to the `hermes` user (uid/gid 1000) |
-| `dashboard` | daemon | `hermes dashboard --host 0.0.0.0 --port 9119 --no-open` | Web UI: chat, config, sessions/memory, skills, logs, analytics, cron |
-| `gateway` | daemon | `hermes gateway run` | Messaging-platform integrations (Telegram, Discord, Signal, …), configured in the dashboard |
-| `bundle-refresh` | daemon | ETag'd `curl` loop (24h) against the support knowledge bundle | Keeps the `startos-support` knowledge current |
+| Component         | Kind    | Command                                                       | Purpose                                                                                     |
+| ----------------- | ------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `install-root-ca` | oneshot | (installs the StartOS root CA into the image trust store)     | Lets `start-cli` and the agent reach the local box over HTTPS                               |
+| `chown`           | oneshot | `chown -R 1000:1000 /opt/data`                                | Hand the data dir to the `hermes` user (uid/gid 1000)                                       |
+| `dashboard`       | daemon  | `hermes dashboard --host 0.0.0.0 --port 9119 --no-open`       | Web UI: chat, config, sessions/memory, skills, logs, analytics, cron                        |
+| `gateway`         | daemon  | `hermes gateway run`                                          | Messaging-platform integrations (Telegram, Discord, Signal, …), configured in the dashboard |
+| `bundle-refresh`  | daemon  | ETag'd `curl` loop (24h) against the support knowledge bundle | Keeps the `startos-support` knowledge current                                               |
 
 `dashboard` and `gateway` require both oneshots before they start.
 
@@ -57,8 +57,8 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 
 ## Volume and Data Layout
 
-| Volume | Mount Point | Purpose |
-| ------ | ----------- | ------- |
+| Volume | Mount Point | Purpose                                                                  |
+| ------ | ----------- | ------------------------------------------------------------------------ |
 | `main` | `/opt/data` | Hermes data dir (`HERMES_HOME`) — config, sessions, memory, skills state |
 
 **Key paths:**
@@ -71,13 +71,13 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 
 ## Installation and First-Run Flow
 
-1. Hermes runs an LLM that can execute commands on your behalf — a **root-equivalent capability** once **Login to StartOS** is granted (see Limitations). The `instructions.md` intro and the *Login to StartOS* task/action warnings surface this.
+1. Hermes runs an LLM that can execute commands on your behalf — a **root-equivalent capability** once **Login to StartOS** is granted (see Limitations). The `instructions.md` intro and the _Login to StartOS_ task/action warnings surface this.
 2. **Set Dashboard Password** is a critical task whenever no password hash is set — the service stays stopped until it is run. It returns the password once (username `admin`); save it. Upgrades from a release that served the dashboard unauthenticated get the same task.
 3. On first start, the **Configure Provider** action is a critical task: Hermes cannot run until an LLM backend resolves.
 4. Pick a backend in **Configure Provider** (a cloud OpenAI-compatible / Gemini / Grok / Anthropic provider, **OpenAI Codex OAuth**, or local **Ollama** / **vLLM** / **llama.cpp**). Selecting a local backend adds it as a running dependency and resolves the backend URL (and key, where published) over the LXC bridge at apply time — the backend must already be installed and running, otherwise the action errors. Selecting OpenAI Codex OAuth starts a browser device-code login and returns the URL/code. For the named cloud providers the model field is a **default-model dropdown** (with a Custom field for ids not yet listed); the chosen model is the default and is changeable later from within Hermes via `/model`.
 5. For OpenAI Codex OAuth, open the returned URL, enter the code, then run **Complete OpenAI Codex OAuth** to exchange the browser approval for Hermes tokens.
 6. The **LLM Provider** health check turns green once a provider resolves; open the **Web Dashboard** to chat.
-7. *(Optional)* Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. The master password is used for that action run; `start-cli` stores its auth cookie on the data volume.
+7. _(Optional)_ Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. The master password is used for that action run; `start-cli` stores its auth cookie on the data volume.
 8. Run **Revoke StartOS Access** any time you want to remove Hermes' stored `start-cli` authentication without uninstalling the service.
 
 ---
@@ -100,9 +100,9 @@ These files are **authoritative and two-way bound**: both the StartOS actions an
 
 ## Network Access and Interfaces
 
-| Interface | ID | Port | Protocol | Type | Purpose |
-| --------- | -- | ---- | -------- | ---- | ------- |
-| Web Dashboard | `ui` | 9119 | HTTP | ui | In-browser chat + full management UI |
+| Interface     | ID   | Port | Protocol | Type | Purpose                              |
+| ------------- | ---- | ---- | -------- | ---- | ------------------------------------ |
+| Web Dashboard | `ui` | 9119 | HTTP     | ui   | In-browser chat + full management UI |
 
 Messaging platforms reach the agent through their own webhooks/long-poll, configured in the dashboard. Hermes' **OpenAI-compatible API server** (an HTTP endpoint that lets external frontends like Open WebUI use Hermes as a model) is one such gateway platform — it is **off by default** and user-enabled from the dashboard's messaging/channels config, where Hermes requires an `API_SERVER_KEY` before it will start (it can dispatch terminal-capable agent work). This package does **not** force it on or export it as a StartOS interface; enabling and exposing it is left to the user.
 
@@ -129,13 +129,13 @@ The `ui` interface points at `/login` rather than `/`, working around an upstrea
 
 ## Actions (StartOS UI)
 
-| Action | Purpose |
-| ------ | ------- |
-| **Set Dashboard Password** | Generate a new random Web Dashboard password, write its scrypt hash to `config.yaml`'s `dashboard.basic_auth`, and return it once. Covers first-set and rotation. `only-stopped`. |
-| **Configure Provider** | Select the LLM backend (OpenAI-compatible, OpenAI Codex OAuth, Gemini, Grok, Anthropic, or local Ollama/vLLM/llama.cpp) and write it into `config.yaml`/`.env`/`auth.json`. For OpenAI Codex OAuth, starts the browser device-code login and creates the follow-up completion task. Toggles the local-backend dependency. |
-| **Complete OpenAI Codex OAuth** | Finish a pending OpenAI Codex browser login by polling OpenAI for approval, exchanging the device-code response for tokens, writing `auth.json`, and restarting Hermes. |
-| **Login to StartOS** | Install the StartOS root CA and authenticate the bundled `start-cli` against this server (asks for the master password). **Grants the agent root-equivalent control** — gated behind a warning. |
-| **Revoke StartOS Access** | Remove Hermes' stored `start-cli` auth cookie from the data volume. Use this to revoke server-administration access; run **Login to StartOS** again to grant it back. |
+| Action                          | Purpose                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Set Dashboard Password**      | Generate a new random Web Dashboard password, write its scrypt hash to `config.yaml`'s `dashboard.basic_auth`, and return it once. Covers first-set and rotation. `only-stopped`.                                                                                                                                         |
+| **Configure Provider**          | Select the LLM backend (OpenAI-compatible, OpenAI Codex OAuth, Gemini, Grok, Anthropic, or local Ollama/vLLM/llama.cpp) and write it into `config.yaml`/`.env`/`auth.json`. For OpenAI Codex OAuth, starts the browser device-code login and creates the follow-up completion task. Toggles the local-backend dependency. |
+| **Complete OpenAI Codex OAuth** | Finish a pending OpenAI Codex browser login by polling OpenAI for approval, exchanging the device-code response for tokens, writing `auth.json`, and restarting Hermes.                                                                                                                                                   |
+| **Login to StartOS**            | Install the StartOS root CA and authenticate the bundled `start-cli` against this server (asks for the master password). **Grants the agent root-equivalent control** — gated behind a warning.                                                                                                                           |
+| **Revoke StartOS Access**       | Remove Hermes' stored `start-cli` auth cookie from the data volume. Use this to revoke server-administration access; run **Login to StartOS** again to grant it back.                                                                                                                                                     |
 
 ---
 
@@ -143,10 +143,10 @@ The `ui` interface points at `/login` rather than `/`, working around an upstrea
 
 All are declared `optional` in the manifest and flipped to **running** dependencies by `setupDependencies` based on the Configure Provider selection (`startos/dependencies.ts`). Cloud providers need no dependency.
 
-| Dependency | Version range | When required |
-| ---------- | ------------- | ------------- |
-| `ollama` | `>=0.21.0:0` | Backend set to Ollama |
-| `vllm` | `>=0.16.0:0.1` | Backend set to vLLM |
+| Dependency  | Version range  | When required                                  |
+| ----------- | -------------- | ---------------------------------------------- |
+| `ollama`    | `>=0.21.0:0`   | Backend set to Ollama                          |
+| `vllm`      | `>=0.16.0:0.1` | Backend set to vLLM                            |
 | `llama-cpp` | `>=1.0.9544:0` | Backend set to llama.cpp (the keyless release) |
 
 ---
@@ -163,18 +163,18 @@ All are declared `optional` in the manifest and flipped to **running** dependenc
 
 ## Health Checks
 
-| Check | Method | Messages |
-| ----- | ------ | -------- |
-| Web Dashboard | `checkWebUrl` on `:9119/api/status` — upstream's exact-match public probe path; every other endpoint 401s behind the auth gate | Success: "The dashboard is ready" / Error: "The dashboard is not ready" |
-| Messaging Gateway | gateway-process liveness via upstream `gateway.status.get_running_pid` (the signal the dashboard itself uses) | Success: "The messaging gateway is running" / Error: "The messaging gateway is not running" |
-| LLM Provider | Runs Hermes' `resolve_runtime_provider()` in the venv | Success: "An LLM provider is configured" / Error: "No LLM provider configured — run the Configure Provider action" |
-| Knowledge Bundle | `test -f` on the live bundle | Success: "The support knowledge bundle is present" / Error: "The support knowledge bundle is not present" |
+| Check             | Method                                                                                                                         | Messages                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Web Dashboard     | `checkWebUrl` on `:9119/api/status` — upstream's exact-match public probe path; every other endpoint 401s behind the auth gate | Success: "The dashboard is ready" / Error: "The dashboard is not ready"                                            |
+| Messaging Gateway | gateway-process liveness via upstream `gateway.status.get_running_pid` (the signal the dashboard itself uses)                  | Success: "The messaging gateway is running" / Error: "The messaging gateway is not running"                        |
+| LLM Provider      | Runs Hermes' `resolve_runtime_provider()` in the venv                                                                          | Success: "An LLM provider is configured" / Error: "No LLM provider configured — run the Configure Provider action" |
+| Knowledge Bundle  | `test -f` on the live bundle                                                                                                   | Success: "The support knowledge bundle is present" / Error: "The support knowledge bundle is not present"          |
 
 ---
 
 ## Limitations and Differences
 
-1. **Root-equivalent capability.** After **Login to StartOS**, the agent's `start-cli` skill can run any server command (uninstall services, change config, etc.) with no built-in confirmation step. The `instructions.md` warning and the *Login to StartOS* task/action warning gate this — keep them intact. **Revoke StartOS Access** removes the stored `start-cli` auth cookie if you later want to cut off that access. Do not install on a server holding important data or keys (e.g. LND/CLN).
+1. **Root-equivalent capability.** After **Login to StartOS**, the agent's `start-cli` skill can run any server command (uninstall services, change config, etc.) with no built-in confirmation step. The `instructions.md` warning and the _Login to StartOS_ task/action warning gate this — keep them intact. **Revoke StartOS Access** removes the stored `start-cli` auth cookie if you later want to cut off that access. Do not install on a server holding important data or keys (e.g. LND/CLN).
 2. **Cloud-provider privacy.** With a cloud backend, every prompt and its context leave the device. Use Ollama, vLLM, or llama.cpp to keep inference on-device.
 3. **No web-terminal wrapper.** The Hermes dashboard's Chat tab is already the full TUI in the browser, so this package does not add the Node web-terminal / Host-rewrite proxy that the Umbrel build needs — the upstream binaries are exposed directly.
 4. **MCP is a future upgrade.** Live StartOS tools over the Model Context Protocol are not wired yet; server administration is via the `start-cli` skill and support is via the `startos-support` docs-search skill over the bundle.
@@ -193,7 +193,7 @@ All are declared `optional` in the manifest and flipped to **running** dependenc
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the doc map, build instructions, and development workflow, and [UPDATING.md](./UPDATING.md) for bumping the upstream version.
+Build and development workflow follow the StartOS packaging guide: <https://docs.start9.com/packaging>. Keep `README.md`, `instructions.md`, and `AGENTS.md` in sync with any change to user-visible behavior or package structure. See [UPDATING.md](./UPDATING.md) for bumping the upstream version.
 
 ---
 
@@ -221,9 +221,9 @@ provider_config: # written by Configure Provider into config.yaml `model`
   codex_oauth_pending: .startos/store.json codexOAuth # temporary device-code state
   vllm_key: read from vllm:public/credentials.json # ollama + llama.cpp are keyless
 dependencies: # optional; flipped to running by Configure Provider
-  ollama: ">=0.21.0:0"
-  vllm: ">=0.16.0:0.1"
-  llama-cpp: ">=1.0.9544:0"
+  ollama: '>=0.21.0:0'
+  vllm: '>=0.16.0:0.1'
+  llama-cpp: '>=1.0.9544:0'
 actions:
   - Configure Provider
   - Complete OpenAI Codex OAuth
