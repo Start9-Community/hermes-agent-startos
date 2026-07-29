@@ -28,7 +28,7 @@ Hermes Agent runs an LLM of your choosing that can execute commands on your beha
 4. If you chose **OpenAI Codex OAuth**, open the returned URL, enter the code, then run **Complete OpenAI Codex OAuth**.
 5. Open the **Web Dashboard** interface. Confirm the chat loads and that you can send a prompt. The **LLM Provider** health check turns green once a provider resolves.
 6. *(Optional)* Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. It asks for your StartOS master password, uses it for that login action, and stores an enrolled `start-cli` identity key on Hermes' data volume. **This grants the agent root-equivalent access — only do this on a machine you treat as expendable.**
-7. Run **Revoke StartOS Access** if you later want to remove Hermes' stored `start-cli` authentication without uninstalling the service.
+7. Run **Revoke StartOS Access** if you later want to cut off that access without uninstalling the service. It un-enrolls Hermes' key from your server and deletes it, so there is no leftover session to clean up by hand.
 
 ## Using Hermes
 

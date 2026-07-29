@@ -54,4 +54,4 @@ gh release view "start-cli/v<version>" -R Start9Labs/start-technologies \
   | grep -E '^start-cli_(x86_64|aarch64)-linux$'
 ```
 
-Also review the release's minimum compatible StartOS version. `start-cli` 1.1.0 moved authentication from cookies to per-device signing keys and requires StartOS 0.4.0-beta.10 or later, matching this package's start-sdk 2.0 host requirement.
+Finally, check whether the new CLI needs a newer StartOS than the package itself does — **the two floors are independent.** `start-cli` 1.1.0 replaced cookie auth with per-device signing keys, so its `auth login` only works against a StartOS that speaks signature auth, which first shipped in `start-os/v0.4.0`. The package's own floor is the manifest `osVersion`, which start-sdk 2.0 sets to `0.4.0-beta.10` — a version that was never released, since the beta line ends at `beta.9`. So every host that can install this package already clears the CLI's floor, but that is a coincidence of the two numbers, not a rule. Re-derive the relationship on the next CLI bump rather than assuming the SDK's floor covers it; a new server-side requirement is called out in the `start-cli/v*` release notes.
