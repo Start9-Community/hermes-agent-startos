@@ -55,8 +55,14 @@ export const loginToOs = sdk.Action.withInput(
       'start-cli-login',
       async (subc) => {
         await installRootCA(effects, subc)
+        // This action is allowed while the daemon is stopped, so establish the
+        // volume ownership that its startup oneshot would otherwise repair.
+        await subc.execFail(
+          ['chown', '-R', '1000:1000', `${dataDir}/.startos`],
+          { user: 'root' },
+        )
         return subc.exec(['start-cli', 'auth', 'login'], {
-          user: 'root',
+          user: 'hermes',
           env: { HOME: dataDir, PASSWORD: input.masterPassword },
         })
       },

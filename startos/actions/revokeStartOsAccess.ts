@@ -1,8 +1,11 @@
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { dataDir, mainMounts } from '../utils'
+import { installRootCA } from './loginToOs'
 
-const startCliCookiePaths = [
+const startCliAuthPaths = [
+  `${dataDir}/.startos/id.key.pem`,
+  `${dataDir}/.startos/developer.key.pem`,
   `${dataDir}/.startos/.cookies.json`,
   `${dataDir}/.startos/.cookies.json.tmp`,
 ]
@@ -30,7 +33,27 @@ export const revokeStartOsAccess = sdk.Action.withoutInput(
       mainMounts(),
       'start-cli-revoke',
       async (subc) => {
-        await subc.execFail(['rm', '-f', ...startCliCookiePaths], {
+        // Login enrolls the key in the server's key store, which is what
+        // `auth session list` reads, so deleting the file alone strands an
+        // unnamed entry there. `auth logout` un-enrolls it, and has to run
+        // first because the request is signed with the key it de-registers.
+        // Deleting the key is the part that actually revokes access, so it
+        // stays unconditional — an unreachable host, a missing CA, or an
+        // already-revoked key can't be allowed to block it.
+        try {
+          await installRootCA(effects, subc)
+          await subc.exec(['start-cli', 'auth', 'logout'], {
+            user: 'hermes',
+            env: { HOME: dataDir },
+          })
+        } catch (e) {
+          console.warn(
+            'Server-side un-enrollment failed; removing the key anyway',
+          )
+          console.warn(String(e))
+        }
+
+        await subc.execFail(['rm', '-f', ...startCliAuthPaths], {
           user: 'root',
         })
       },

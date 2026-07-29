@@ -64,6 +64,7 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 **Key paths:**
 
 - `/opt/data/config.yaml`, `/opt/data/.env` — Hermes' own config + credentials (see Configuration).
+- `/opt/data/.startos/config.yaml`, `/opt/data/.startos/id.key.pem` — `start-cli`'s host (seeded from the OS IP at init) and the signing key **Login to StartOS** enrolls with the server. The key is a root-equivalent credential; **Revoke StartOS Access** un-enrolls and deletes it. Owned by uid 1000 so the agent can use it.
 - `/opt/data/.startos/knowledge/bundle.json` — the refreshable support knowledge bundle (live copy).
 - `/opt/startos/skills`, `/opt/startos/knowledge/bundle.json` — **image-owned** managed context (the `start-cli` and `startos-support` skills, plus the baseline bundle). Outside the data volume so it updates with package upgrades and the agent cannot edit it.
 
@@ -77,7 +78,7 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 4. Pick a backend in **Configure Provider** (a cloud OpenAI-compatible / Gemini / Grok / Anthropic provider, **OpenAI Codex OAuth**, or local **Ollama** / **vLLM** / **llama.cpp**). Selecting a local backend adds it as a running dependency and resolves the backend URL (and key, where published) over the LXC bridge at apply time — the backend must already be installed and running, otherwise the action errors. Selecting OpenAI Codex OAuth starts a browser device-code login and returns the URL/code. For the named cloud providers the model field is a **default-model dropdown** (with a Custom field for ids not yet listed); the chosen model is the default and is changeable later from within Hermes via `/model`.
 5. For OpenAI Codex OAuth, open the returned URL, enter the code, then run **Complete OpenAI Codex OAuth** to exchange the browser approval for Hermes tokens.
 6. The **LLM Provider** health check turns green once a provider resolves; open the **Web Dashboard** to chat.
-7. _(Optional)_ Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. The master password is used for that action run; `start-cli` stores its auth cookie on the data volume.
+7. _(Optional)_ Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. The master password is used for that action run; `start-cli` stores its enrolled identity key on the data volume.
 8. Run **Revoke StartOS Access** any time you want to remove Hermes' stored `start-cli` authentication without uninstalling the service.
 
 ---
@@ -135,7 +136,7 @@ The `ui` interface points at `/login` rather than `/`, working around an upstrea
 | **Configure Provider**          | Select the LLM backend (OpenAI-compatible, OpenAI Codex OAuth, Gemini, Grok, Anthropic, or local Ollama/vLLM/llama.cpp) and write it into `config.yaml`/`.env`/`auth.json`. For OpenAI Codex OAuth, starts the browser device-code login and creates the follow-up completion task. Toggles the local-backend dependency. |
 | **Complete OpenAI Codex OAuth** | Finish a pending OpenAI Codex browser login by polling OpenAI for approval, exchanging the device-code response for tokens, writing `auth.json`, and restarting Hermes.                                                                                                                                                   |
 | **Login to StartOS**            | Install the StartOS root CA and authenticate the bundled `start-cli` against this server (asks for the master password). **Grants the agent root-equivalent control** — gated behind a warning.                                                                                                                           |
-| **Revoke StartOS Access**       | Remove Hermes' stored `start-cli` auth cookie from the data volume. Use this to revoke server-administration access; run **Login to StartOS** again to grant it back.                                                                                                                                                     |
+| **Revoke StartOS Access**       | Un-enroll Hermes' `start-cli` identity key from the server (best-effort) and delete it from the data volume. Use this to revoke server-administration access; run **Login to StartOS** again to grant it back.                                                                                                            |
 
 ---
 
@@ -174,7 +175,7 @@ All are declared `optional` in the manifest and flipped to **running** dependenc
 
 ## Limitations and Differences
 
-1. **Root-equivalent capability.** After **Login to StartOS**, the agent's `start-cli` skill can run any server command (uninstall services, change config, etc.) with no built-in confirmation step. The `instructions.md` warning and the _Login to StartOS_ task/action warning gate this — keep them intact. **Revoke StartOS Access** removes the stored `start-cli` auth cookie if you later want to cut off that access. Do not install on a server holding important data or keys (e.g. LND/CLN).
+1. **Root-equivalent capability.** After **Login to StartOS**, the agent's `start-cli` skill can run any server command (uninstall services, change config, etc.) with no built-in confirmation step. The `instructions.md` warning and the _Login to StartOS_ task/action warning gate this — keep them intact. **Revoke StartOS Access** un-enrolls and removes the stored `start-cli` identity key if you later want to cut off that access. Do not install on a server holding important data or keys (e.g. LND/CLN).
 2. **Cloud-provider privacy.** With a cloud backend, every prompt and its context leave the device. Use Ollama, vLLM, or llama.cpp to keep inference on-device.
 3. **No web-terminal wrapper.** The Hermes dashboard's Chat tab is already the full TUI in the browser, so this package does not add the Node web-terminal / Host-rewrite proxy that the Umbrel build needs — the upstream binaries are exposed directly.
 4. **MCP is a future upgrade.** Live StartOS tools over the Model Context Protocol are not wired yet; server administration is via the `start-cli` skill and support is via the `startos-support` docs-search skill over the bundle.

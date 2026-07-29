@@ -30,38 +30,28 @@ This package runs the **official upstream `nousresearch/hermes-agent` image** �
 - **`startos/utils.ts`** — set `HERMES_VERSION` to `<new version>` (without the leading `v`).
 - **`startos/versions/current.ts`** — edit in place: set `version` to `'<new version>:0'` (the `:N` revision resets to `0` on a new upstream version) and update `releaseNotes` (all locales). Leave `index.ts` and the `current` export untouched. Only spin off a historical version file when the bump carries an `up`/`down` migration.
 
-## The baked `start-cli` (`STARTOS_VERSION`)
+## The baked `start-cli` (`START_CLI_VERSION`)
 
-Separate from the Hermes image, the `Dockerfile` downloads a `start-cli` binary for the **Login to StartOS** skill, pinned by `STARTOS_VERSION` in `startos/utils.ts`. It tracks a [`Start9Labs/start-os`](https://github.com/Start9Labs/start-os) release — now the `start-technologies` monorepo, which the old URL redirects to — not Hermes.
+Separate from the Hermes image, the `Dockerfile` downloads a `start-cli` binary for the **Login to StartOS** skill, pinned by `START_CLI_VERSION` in `startos/utils.ts`. It tracks the `start-cli` release line in the [`Start9Labs/start-technologies`](https://github.com/Start9Labs/start-technologies) monorepo, not Hermes or StartOS itself.
 
 > [!WARNING]
-> **Do not use a bare `gh release view` on that repo.** It is a monorepo publishing releases for *several* products under per-product tag prefixes (`start-cli/`, `start-sdk/`, `start-wrt/`, …), so "Latest" is whichever product shipped most recently. Today `gh release view -R Start9Labs/start-os --json tagName -q .tagName` returns **`start-wrt/v1.0.0`** — a StartWRT router-OS release that has nothing to do with `start-cli`. Pinning it would be meaningless.
+> **Do not use a bare `gh release view` on that repo.** The monorepo publishes releases for several products under per-product tag prefixes (`start-cli/`, `start-sdk/`, `start-wrt/`, …), so "Latest" may refer to a different product.
 
-The `start-cli` release line specifically:
+Find the latest `start-cli` tag specifically:
 
 ```bash
-gh release list -R Start9Labs/start-os -L 60 --json tagName \
+gh release list -R Start9Labs/start-technologies -L 60 --json tagName \
   -q '[.[] | select(.tagName | startswith("start-cli/"))][0].tagName'
 ```
 
-> [!IMPORTANT]
-> **The newest `start-cli` is not currently pinnable without a `Dockerfile` change.** That command returns `start-cli/v1.0.2`, but the `Dockerfile` builds its download URL as:
->
-> ```
-> https://github.com/Start9Labs/start-os/releases/download/v${STARTOS_VERSION}/start-cli_$(uname -m)-linux
-> ```
->
-> The tag path segment is hardcoded as `v` + `STARTOS_VERSION`, which **cannot express** a slash-prefixed tag like `start-cli/v1.0.2` — no value of `STARTOS_VERSION` produces it. So the newest usable value is the newest release still on the **legacy un-prefixed tag scheme**:
->
-> ```bash
-> gh release list -R Start9Labs/start-os -L 60 --json tagName \
->   -q '[.[] | select(.tagName | test("^v[0-9]"))][0].tagName'
-> ```
->
-> which is **`v0.4.0-beta.9`** — the value `STARTOS_VERSION` currently holds (`0.4.0-beta.9`). **Moving to the 1.0.x line requires reworking that URL** to carry the `start-cli/` prefix (the 1.0.x releases do still publish the same `start-cli_x86_64-linux` / `start-cli_aarch64-linux` assets, so only the tag shape is in the way). Don't just bump the variable — it will 404 at image build.
+Set `START_CLI_VERSION` to the version without the `start-cli/v` prefix. The `Dockerfile` constructs the product-scoped tag as `start-cli%2Fv${START_CLI_VERSION}`.
 
-Set `STARTOS_VERSION` to the tag without the leading `v` (the `Dockerfile` prepends it). The release must publish `start-cli_x86_64-linux` and `start-cli_aarch64-linux` assets, which the `$(uname -m)` download depends on — verify before pinning:
+The release must publish both Linux architectures used by this package. Verify the assets before pinning:
 
 ```bash
-gh release view <tag> -R Start9Labs/start-os --json assets -q '.assets[].name' | grep start-cli_
+gh release view "start-cli/v<version>" -R Start9Labs/start-technologies \
+  --json assets -q '.assets[].name' \
+  | grep -E '^start-cli_(x86_64|aarch64)-linux$'
 ```
+
+Finally, check whether the new CLI needs a newer StartOS than the package itself does — **the two floors are independent.** `start-cli` 1.1.0 replaced cookie auth with per-device signing keys, so its `auth login` only works against a StartOS that speaks signature auth, which first shipped in `start-os/v0.4.0`. The package's own floor is the manifest `osVersion`, which start-sdk 2.0 sets to `0.4.0-beta.10` — a version that was never released, since the beta line ends at `beta.9`. So every host that can install this package already clears the CLI's floor, but that is a coincidence of the two numbers, not a rule. Re-derive the relationship on the next CLI bump rather than assuming the SDK's floor covers it; a new server-side requirement is called out in the `start-cli/v*` release notes.
