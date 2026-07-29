@@ -2,7 +2,9 @@ import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { dataDir, mainMounts } from '../utils'
 
-const startCliCookiePaths = [
+const startCliAuthPaths = [
+  `${dataDir}/.startos/id.key.pem`,
+  `${dataDir}/.startos/developer.key.pem`,
   `${dataDir}/.startos/.cookies.json`,
   `${dataDir}/.startos/.cookies.json.tmp`,
 ]
@@ -30,7 +32,7 @@ export const revokeStartOsAccess = sdk.Action.withoutInput(
       mainMounts(),
       'start-cli-revoke',
       async (subc) => {
-        await subc.execFail(['rm', '-f', ...startCliCookiePaths], {
+        await subc.execFail(['rm', '-f', ...startCliAuthPaths], {
           user: 'root',
         })
       },

@@ -6,7 +6,7 @@
 # To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v2026.7.20
 FROM nousresearch/hermes-agent:v2026.7.20@sha256:f7b35053268f532f98955195c909f15a230470fbcbdacaa9fdecb95707dad04a
 
-ARG STARTOS_VERSION
+ARG START_CLI_VERSION
 
 USER root
 
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # start-cli — the StartOS server-administration CLI the agent drives (see
 # skills/start-cli). Authenticated at runtime by the "Login to StartOS" action.
-RUN curl -fsSL "https://github.com/Start9Labs/start-os/releases/download/v${STARTOS_VERSION}/start-cli_$(uname -m)-linux" -o /usr/local/bin/start-cli \
+RUN curl -fsSL "https://github.com/Start9Labs/start-technologies/releases/download/start-cli%2Fv${START_CLI_VERSION}/start-cli_$(uname -m)-linux" -o /usr/local/bin/start-cli \
     && chmod +x /usr/local/bin/start-cli
 
 # Keep the hermes venv on PATH for every shell the agent's terminal tool spawns.
