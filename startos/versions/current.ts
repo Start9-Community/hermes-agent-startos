@@ -1,43 +1,33 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2026.7.20:3',
+  version: '2026.7.30:0',
   releaseNotes: {
-    en_US: `Updated Hermes Agent to 2026.7.20, picking up upstream dashboard, gateway, provider, and stability fixes since 2026.7.7.2.
+    en_US: `Updated Hermes Agent to 2026.7.30, the upstream 0.19.1 patch release containing gateway, MCP, provider, voice, desktop, installer, and media-delivery fixes since 2026.7.20.
 
-This release also migrates the package to start-sdk 2.0 (requires StartOS 0.4.0-beta.10 or later).
+The package continues to use start-sdk 2.0 and includes start-cli 1.1.0 with signing-key authentication.
 
-This revision fixes Login to StartOS on supported hosts by upgrading the bundled start-cli to 1.1.0 and its signing-key authentication. Revoke StartOS Access now un-enrolls that key from the server as well as deleting it from Hermes' data volume.
+Release: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.30`,
+    es_ES: `Actualiza Hermes Agent a 2026.7.30, la versión de parche 0.19.1 de upstream que incluye correcciones de la pasarela, MCP, proveedores, voz, escritorio, instalador y entrega de archivos multimedia desde 2026.7.20.
 
-Release: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
-    es_ES: `Actualiza Hermes Agent a 2026.7.20, incorporando las correcciones del panel, la pasarela, los proveedores y la estabilidad publicadas en upstream desde la versión 2026.7.7.2.
+El paquete continúa usando start-sdk 2.0 e incluye start-cli 1.1.0 con autenticación mediante clave de firma.
 
-Esta versión también migra el paquete a start-sdk 2.0 (requiere StartOS 0.4.0-beta.10 o posterior).
+Versión: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.30`,
+    de_DE: `Aktualisiert Hermes Agent auf 2026.7.30, die Upstream-Patchversion 0.19.1 mit Korrekturen für Gateway, MCP, Anbieter, Sprache, Desktop, Installer und Medienzustellung seit 2026.7.20.
 
-Esta revisión corrige Iniciar sesión en StartOS en los hosts compatibles al actualizar el start-cli incluido a la versión 1.1.0 y su autenticación mediante claves de firma. Revocar acceso a StartOS ahora también anula el registro de esa clave en el servidor, además de eliminarla del volumen de datos de Hermes.
+Das Paket verwendet weiterhin start-sdk 2.0 und enthält start-cli 1.1.0 mit Signaturschlüssel-Authentifizierung.
 
-Versión: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
-    de_DE: `Aktualisiert Hermes Agent auf 2026.7.20 und übernimmt die seit 2026.7.7.2 im Upstream veröffentlichten Korrekturen an Dashboard, Gateway, Anbietern und Stabilität.
+Veröffentlichung: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.30`,
+    pl_PL: `Aktualizuje Hermes Agent do 2026.7.30, poprawkowego wydania upstream 0.19.1, zawierającego poprawki bramy, MCP, dostawców, obsługi głosu, aplikacji desktopowej, instalatora i dostarczania multimediów od wersji 2026.7.20.
 
-Diese Version stellt das Paket außerdem auf start-sdk 2.0 um (erfordert StartOS 0.4.0-beta.10 oder neuer).
+Pakiet nadal używa start-sdk 2.0 i zawiera start-cli 1.1.0 z uwierzytelnianiem za pomocą klucza podpisującego.
 
-Diese Revision behebt die Anmeldung bei StartOS auf unterstützten Hosts, indem das enthaltene start-cli auf Version 1.1.0 und dessen Signaturschlüssel-Authentifizierung aktualisiert wird. StartOS-Zugriff widerrufen hebt die Registrierung dieses Schlüssels jetzt auch auf dem Server auf und löscht ihn zusätzlich vom Datenträger von Hermes.
+Wydanie: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.30`,
+    fr_FR: `Met à jour Hermes Agent vers 2026.7.30, la version corrective 0.19.1 en amont qui regroupe des correctifs pour la passerelle, MCP, les fournisseurs, la voix, l'application de bureau, le programme d'installation et la livraison de médias depuis 2026.7.20.
 
-Veröffentlichung: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
-    pl_PL: `Aktualizuje Hermes Agent do 2026.7.20, przejmując opublikowane w upstream od wersji 2026.7.7.2 poprawki panelu, bramy, dostawców oraz stabilności.
+Le paquet continue d'utiliser start-sdk 2.0 et inclut start-cli 1.1.0 avec authentification par clé de signature.
 
-Ta wersja przenosi też pakiet na start-sdk 2.0 (wymaga StartOS 0.4.0-beta.10 lub nowszego).
-
-Ta rewizja naprawia logowanie do StartOS na obsługiwanych hostach, aktualizując dołączony start-cli do wersji 1.1.0 i uwierzytelniania kluczem podpisującym. Odwołaj dostęp do StartOS wyrejestrowuje teraz ten klucz również z serwera, a nie tylko usuwa go z woluminu danych Hermesa.
-
-Wydanie: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
-    fr_FR: `Met à jour Hermes Agent vers 2026.7.20, en intégrant les corrections du tableau de bord, de la passerelle, des fournisseurs et de la stabilité publiées en amont depuis la version 2026.7.7.2.
-
-Cette version fait également passer le paquet à start-sdk 2.0 (nécessite StartOS 0.4.0-beta.10 ou une version ultérieure).
-
-Cette révision corrige la connexion à StartOS sur les hôtes pris en charge en mettant à jour le start-cli intégré vers la version 1.1.0 et son authentification par clé de signature. Révoquer l'accès à StartOS annule désormais aussi l'enregistrement de cette clé sur le serveur, en plus de la supprimer du volume de données de Hermes.
-
-Version : https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.20`,
+Version : https://github.com/NousResearch/hermes-agent/releases/tag/v2026.7.30`,
   },
   migrations: {
     up: async ({ effects }) => {},
