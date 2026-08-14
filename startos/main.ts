@@ -32,6 +32,18 @@ from gateway.status import get_running_pid
 sys.exit(0 if get_running_pid() else 1)
 `
 
+// StartOS supervises each daemon directly, but the Hermes daemons themselves
+// launch session/tool subprocess trees. Make the daemon boundary a Linux child
+// subreaper so descendants orphaned by a completed or interrupted session are
+// adopted and waited for here instead of accumulating as zombies under the
+// container's launch-init. `-g` forwards signals to the Hermes daemon's child
+// process group, preserving clean StartOS stop/restart behavior. Adopted
+// descendants which created a separate session are still reaped when they
+// exit, but are not implied to receive that group signal.
+const withSubreaper = (
+  command: [string, ...string[]],
+): [string, ...string[]] => ['tini', '-s', '-g', '--', ...command]
+
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info(i18n('Starting Hermes Agent!'))
 
@@ -143,7 +155,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       .addDaemon('dashboard', {
         subcontainer: sub,
         exec: {
-          command: [
+          command: withSubreaper([
             'hermes',
             'dashboard',
             '--host',
@@ -151,7 +163,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             '--port',
             dashboardPort.toString(),
             '--no-open',
-          ],
+          ]),
           env,
           user: 'hermes',
         },
@@ -176,7 +188,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       .addDaemon('gateway', {
         subcontainer: sub,
         exec: {
-          command: ['hermes', 'gateway', 'run'],
+          command: withSubreaper(['hermes', 'gateway', 'run']),
           env,
           user: 'hermes',
         },

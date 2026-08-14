@@ -38,7 +38,7 @@ StartOS supplies what Hermes would otherwise need a wrapper for — network addr
 | Property      | Value                                                                                                             |
 | ------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Base image    | `nousresearch/hermes-agent` (official upstream, pinned by digest)                                                 |
-| StartOS layer | StartOS root CA + `start-cli`, `git`/`jq`/`ripgrep`, managed skills, baseline knowledge bundle (see `Dockerfile`) |
+| StartOS layer | StartOS root CA + `start-cli`, `git`/`jq`/`ripgrep`, `tini`, managed skills, baseline knowledge bundle (see `Dockerfile`) |
 | Architectures | x86_64, aarch64                                                                                                   |
 
 All containers share one subcontainer of the `main` volume. The runtime is composed in `startos/main.ts`:
@@ -47,11 +47,19 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 | ----------------- | ------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `install-root-ca` | oneshot | (installs the StartOS root CA into the image trust store)     | Lets `start-cli` and the agent reach the local box over HTTPS                               |
 | `chown`           | oneshot | `chown 1000:1000` over `/opt/data`, its top-level files, and `.startos/` | Repairs the root-owned paths init and the actions leave behind, so the `hermes` user (uid 1000) can write them |
-| `dashboard`       | daemon  | `hermes dashboard --host 0.0.0.0 --port 9119 --no-open`       | Web UI: chat, config, sessions/memory, skills, logs, analytics, cron                        |
-| `gateway`         | daemon  | `hermes gateway run`                                          | Messaging-platform integrations (Telegram, Discord, Signal, …), configured in the dashboard |
+| `dashboard`       | daemon  | `tini -s -g -- hermes dashboard --host 0.0.0.0 --port 9119 --no-open` | Web UI: chat, config, sessions/memory, skills, logs, analytics, cron                        |
+| `gateway`         | daemon  | `tini -s -g -- hermes gateway run`                            | Messaging-platform integrations (Telegram, Discord, Signal, …), configured in the dashboard |
 | `bundle-refresh`  | daemon  | ETag'd `curl` loop (24h) against the support knowledge bundle | Keeps the `startos-support` knowledge current                                               |
 
 `dashboard` and `gateway` require both oneshots before they start.
+
+Both daemons run below `tini` in Linux child-subreaper mode. Long-running goal
+sessions and terminal tools create subprocess trees; if an intermediate process
+ends first, `tini` adopts and reaps the remaining descendant and forwards
+StartOS stop signals to the Hermes daemon's process group. Descendants which
+created a separate session are still reaped when they exit, though that group
+signal does not reach them. This prevents completed or interrupted work from
+leaving zombie processes without changing Hermes itself.
 
 ---
 
@@ -180,7 +188,7 @@ All are declared `optional` in the manifest and flipped to **running** dependenc
 3. **No web-terminal wrapper.** The Hermes dashboard's Chat tab is already the full TUI in the browser, so this package does not add the Node web-terminal / Host-rewrite proxy that the Umbrel build needs — the upstream binaries are exposed directly.
 4. **MCP is a future upgrade.** Live StartOS tools over the Model Context Protocol are not wired yet; server administration is via the `start-cli` skill and support is via the `startos-support` docs-search skill over the bundle.
 5. **Support-docs scope.** The bundled knowledge covers StartOS, StartTunnel, and registry packages — not the s9pk Packaging book or Bitcoin Guides.
-6. **Dashboard auth is delegated to StartOS.** The dashboard runs with `--insecure` — its built-in OAuth gate is off, and StartOS's authenticated `ui` interface is the sole access control (the container port is never exposed directly).
+6. **Dashboard authentication uses Hermes' built-in password gate.** Existing package code in `startos/init/watchCredentials.ts` raises a service-blocking critical task while `dashboard.basic_auth.password_hash` is missing, and `startos/actions/setDashboardPassword.ts` supplies that hash. The daemon command in `startos/main.ts` does not pass `--insecure`; the bound interface therefore remains protected by Hermes itself. This corrects older package documentation and is not introduced by the subreaper wrapper.
 
 ---
 
