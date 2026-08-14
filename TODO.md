@@ -1,5 +1,11 @@
 # TODO
 
+- **Remove the daemon-level `tini -s` wrapper only if StartOS launch-init gains
+  equivalent descendant reaping.** Hermes goal continuations and terminal tools
+  can orphan descendants after their immediate session process exits. The
+  package wraps both long-lived Hermes daemons so those children are adopted,
+  signalled as a process group, and reaped instead of accumulating as zombies.
+
 - **Revert the `ui` interface path to `''` once upstream fixes dashboard auto-SSO.**
   `_auto_sso_response` (`hermes_cli/dashboard_auth/middleware.py`) redirects an
   unauthenticated document load to `/auth/login?provider=<name>` whenever exactly one

@@ -11,13 +11,17 @@ ARG START_CLI_VERSION
 USER root
 
 # Tooling: ca-certificates for the StartOS root CA (installed at runtime via the
-# Login action / oneshot), git+jq+ripgrep for the support docs-search skill.
+# Login action / oneshot), git+jq+ripgrep for the support docs-search skill, and
+# tini as a child subreaper for the long-lived Hermes daemons. Hermes sessions
+# can outlive the immediate process which launched a tool; without a subreaper,
+# those adopted descendants become zombies under StartOS's container init.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     git \
     jq \
     ripgrep \
+    tini \
     && rm -rf /var/lib/apt/lists/*
 
 # start-cli — the StartOS server-administration CLI the agent drives (see

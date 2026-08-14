@@ -14,6 +14,7 @@ Hermes Agent runs an LLM of your choosing that can execute commands on your beha
 - **A messaging gateway** for connecting Telegram, Discord, Signal, Slack, Matrix, and other platforms (configured in the dashboard).
 - **Optional local inference** — choose Ollama, vLLM, or llama.cpp in the *Configure Provider* action and the backend is added as a dependency and wired automatically, so no cloud API key is required.
 - **StartOS-aware skills** — a `start-cli` skill for administering this server (after *Login to StartOS*) and a `startos-support` skill backed by the Start9 documentation knowledge bundle, refreshed in the background.
+- **Reliable long-running sessions** — the dashboard and messaging gateway run under a child subreaper so completed or interrupted goal/tool subprocesses are cleaned up automatically.
 
 ## Getting set up
 
