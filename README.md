@@ -46,7 +46,7 @@ All containers share one subcontainer of the `main` volume. The runtime is compo
 | Component         | Kind    | Command                                                       | Purpose                                                                                     |
 | ----------------- | ------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `install-root-ca` | oneshot | (installs the StartOS root CA into the image trust store)     | Lets `start-cli` and the agent reach the local box over HTTPS                               |
-| `chown`           | oneshot | `chown -R 1000:1000 /opt/data`                                | Hand the data dir to the `hermes` user (uid/gid 1000)                                       |
+| `chown`           | oneshot | One-time ownership migration guarded by `.startos/ownership-uid-1000-v1` | Hand the data dir to the `hermes` user without rescanning large workspaces on every restart |
 | `dashboard`       | daemon  | `hermes dashboard --host 0.0.0.0 --port 9119 --no-open`       | Web UI: chat, config, sessions/memory, skills, logs, analytics, cron                        |
 | `gateway`         | daemon  | `hermes gateway run`                                          | Messaging-platform integrations (Telegram, Discord, Signal, …), configured in the dashboard |
 | `bundle-refresh`  | daemon  | ETag'd `curl` loop (24h) against the support knowledge bundle | Keeps the `startos-support` knowledge current                                               |

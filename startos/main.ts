@@ -121,7 +121,22 @@ export const main = sdk.setupMain(async ({ effects }) => {
       })
       .addOneshot('chown', {
         subcontainer: sub,
-        exec: { command: ['chown', '-R', '1000:1000', dataDir] },
+        // Re-own the persistent volume once, not on every service restart.
+        // Hermes workspaces commonly contain large repositories and Gradle
+        // caches; walking all of them blocks both daemons and adds heavy I/O.
+        // Runtime writers already run as uid 1000, while package actions that
+        // create root-owned state must continue to chown their own outputs.
+        exec: {
+          command: [
+            'sh',
+            '-c',
+            `marker='${dataDir}/.startos/ownership-uid-1000-v1'; ` +
+              `if [ ! -f "$marker" ]; then ` +
+              `chown -R 1000:1000 '${dataDir}' && ` +
+              `touch "$marker" && chown 1000:1000 "$marker"; ` +
+              `fi`,
+          ],
+        },
         requires: [],
       })
       .addDaemon('dashboard', {
