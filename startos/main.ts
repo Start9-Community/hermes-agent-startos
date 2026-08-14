@@ -121,7 +121,23 @@ export const main = sdk.setupMain(async ({ effects }) => {
       })
       .addOneshot('chown', {
         subcontainer: sub,
-        exec: { command: ['chown', '-R', '1000:1000', dataDir] },
+        // Root-context writers — init's mkdir/merge/cp and the actions' file
+        // models — create the volume root, its top-level files and `.startos`
+        // owned by root, and the uid-1000 daemons then EACCES on their own
+        // auth-store refresh (issue #6). That is the whole set: everything
+        // deeper is written by hermes, so a `-R` over the volume walks the
+        // agent's repos and caches to repair nothing while both daemons wait
+        // on it, and aborts into a retry if a file vanishes mid-traversal.
+        exec: {
+          command: [
+            'sh',
+            '-c',
+            `chown 1000:1000 '${dataDir}'; ` +
+              `for f in '${dataDir}'/* '${dataDir}'/.[!.]*; do ` +
+              `[ -f "$f" ] && chown 1000:1000 "$f"; done; ` +
+              `chown -R 1000:1000 '${dataDir}/.startos'`,
+          ],
+        },
         requires: [],
       })
       .addDaemon('dashboard', {
