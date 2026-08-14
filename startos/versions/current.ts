@@ -1,33 +1,23 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2026.8.13:0',
+  version: '2026.8.13:1',
   releaseNotes: {
-    en_US: `Updated Hermes Agent to 2026.8.13, the upstream 0.20.1 patch release rolling up broad stabilization and fixes across the desktop app, gateway platforms, installers, tool system, and provider catalogs.
+    en_US: `Fixes slow service startup. The ownership repair that runs at boot walked the whole Hermes data directory — including any repositories and build caches the agent had created there — holding the dashboard and gateway offline for minutes on a well-used install. It now repairs only the paths StartOS itself writes.
 
-The package continues to use start-sdk 2.0 and includes start-cli 1.1.0 with signing-key authentication.
+Hermes Agent is unchanged at 2026.8.13 (upstream 0.20.1).`,
+    es_ES: `Corrige el arranque lento del servicio. La reparación de propiedad que se ejecuta al inicio recorría todo el directorio de datos de Hermes —incluidos los repositorios y las cachés de compilación que el agente hubiera creado allí—, lo que dejaba el panel y la pasarela fuera de servicio durante minutos en una instalación con mucho uso. Ahora solo repara las rutas que escribe StartOS.
 
-Release: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.8.13`,
-    es_ES: `Actualiza Hermes Agent a 2026.8.13, la versión de parche 0.20.1 de upstream que recopila amplias mejoras de estabilidad y correcciones en la aplicación de escritorio, las plataformas de gateway, los instaladores, el sistema de herramientas y los catálogos de proveedores.
+Hermes Agent se mantiene en 2026.8.13 (upstream 0.20.1).`,
+    de_DE: `Behebt den langsamen Dienststart. Die Eigentümer-Reparatur beim Start durchlief das gesamte Hermes-Datenverzeichnis — einschließlich aller dort vom Agenten angelegten Repositorys und Build-Caches — und hielt Dashboard und Gateway auf einer viel genutzten Installation minutenlang offline. Sie repariert jetzt nur noch die Pfade, die StartOS selbst schreibt.
 
-El paquete continúa usando start-sdk 2.0 e incluye start-cli 1.1.0 con autenticación mediante clave de firma.
+Hermes Agent bleibt unverändert bei 2026.8.13 (Upstream 0.20.1).`,
+    pl_PL: `Naprawia powolne uruchamianie usługi. Naprawa właściciela plików wykonywana przy starcie przechodziła przez cały katalog danych Hermesa — łącznie z repozytoriami i pamięciami podręcznymi kompilacji utworzonymi tam przez agenta — przez co panel i brama pozostawały niedostępne przez wiele minut na intensywnie używanej instalacji. Teraz naprawiane są tylko ścieżki zapisywane przez StartOS.
 
-Versión: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.8.13`,
-    de_DE: `Aktualisiert Hermes Agent auf 2026.8.13, die Upstream-Patch-Version 0.20.1 mit umfangreichen Stabilitätsverbesserungen und Fehlerbehebungen für die Desktop-App, Gateway-Plattformen, Installationsprogramme, das Werkzeugsystem und die Anbieter-Kataloge.
+Hermes Agent pozostaje w wersji 2026.8.13 (upstream 0.20.1).`,
+    fr_FR: `Corrige la lenteur au démarrage du service. La réparation des propriétaires effectuée au démarrage parcourait l'intégralité du répertoire de données de Hermes — y compris les dépôts et les caches de compilation que l'agent y avait créés —, laissant le tableau de bord et la passerelle hors service pendant plusieurs minutes sur une installation très utilisée. Elle ne répare désormais que les chemins écrits par StartOS.
 
-Das Paket verwendet weiterhin start-sdk 2.0 und enthält start-cli 1.1.0 mit Signaturschlüssel-Authentifizierung.
-
-Veröffentlichung: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.8.13`,
-    pl_PL: `Aktualizuje Hermes Agent do wersji 2026.8.13, poprawkowego wydania upstream 0.20.1 obejmującego szerokie usprawnienia stabilności i poprawki aplikacji desktopowej, platform bramy, instalatorów, systemu narzędzi oraz katalogów dostawców.
-
-Pakiet nadal używa start-sdk 2.0 i zawiera start-cli 1.1.0 z uwierzytelnianiem za pomocą klucza podpisującego.
-
-Wydanie: https://github.com/NousResearch/hermes-agent/releases/tag/v2026.8.13`,
-    fr_FR: `Met à jour Hermes Agent vers la version 2026.8.13, la version corrective amont 0.20.1 qui regroupe de nombreuses améliorations de stabilité et corrections pour l'application de bureau, les plateformes de passerelle, les programmes d'installation, le système d'outils et les catalogues de fournisseurs.
-
-Le paquet continue d'utiliser start-sdk 2.0 et inclut start-cli 1.1.0 avec authentification par clé de signature.
-
-Version : https://github.com/NousResearch/hermes-agent/releases/tag/v2026.8.13`,
+Hermes Agent reste en 2026.8.13 (amont 0.20.1).`,
   },
   migrations: {
     up: async ({ effects }) => {},
