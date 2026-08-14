@@ -4,7 +4,9 @@
   equivalent descendant reaping.** Hermes goal continuations and terminal tools
   can orphan descendants after their immediate session process exits. The
   package wraps both long-lived Hermes daemons so those children are adopted,
-  signalled as a process group, and reaped instead of accumulating as zombies.
+  the daemon's own process group receives stop signals, and every adopted child
+  is reaped on exit instead of accumulating as a zombie. A descendant which
+  created a separate session is not implied to receive the daemon-group signal.
 
 - **Revert the `ui` interface path to `''` once upstream fixes dashboard auto-SSO.**
   `_auto_sso_response` (`hermes_cli/dashboard_auth/middleware.py`) redirects an

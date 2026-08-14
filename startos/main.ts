@@ -36,8 +36,10 @@ sys.exit(0 if get_running_pid() else 1)
 // launch session/tool subprocess trees. Make the daemon boundary a Linux child
 // subreaper so descendants orphaned by a completed or interrupted session are
 // adopted and waited for here instead of accumulating as zombies under the
-// container's launch-init. `-g` forwards signals to the whole child process
-// group, preserving clean StartOS stop/restart behavior.
+// container's launch-init. `-g` forwards signals to the Hermes daemon's child
+// process group, preserving clean StartOS stop/restart behavior. Adopted
+// descendants which created a separate session are still reaped when they
+// exit, but are not implied to receive that group signal.
 const withSubreaper = (
   command: [string, ...string[]],
 ): [string, ...string[]] => ['tini', '-s', '-g', '--', ...command]
