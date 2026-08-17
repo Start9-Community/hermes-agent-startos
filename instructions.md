@@ -1,6 +1,6 @@
 # Hermes Agent
 
-Hermes Agent runs an LLM of your choosing that can execute commands on your behalf. If you grant it server access (the *Login to StartOS* action), it gains root-equivalent control of your StartOS server. Run it only on a machine you treat as disposable — one that holds no other services or keys you can't afford to lose.
+Hermes Agent runs an LLM of your choosing that can execute commands on your behalf. If you grant it server access (the _Login to StartOS_ action), it gains root-equivalent control of your StartOS server. Run it only on a machine you treat as disposable — one that holds no other services or keys you can't afford to lose.
 
 ## Documentation
 
@@ -12,8 +12,8 @@ Hermes Agent runs an LLM of your choosing that can execute commands on your beha
 
 - **The Hermes dashboard**, served over the **Web Dashboard** interface — in-browser chat (the full Hermes TUI) plus configuration, session/memory browsing, skill toggles, logs, token/cost analytics, and cron scheduling, all behind a password login that StartOS sets up for you.
 - **A messaging gateway** for connecting Telegram, Discord, Signal, Slack, Matrix, and other platforms (configured in the dashboard).
-- **Optional local inference** — choose Ollama, vLLM, or llama.cpp in the *Configure Provider* action and the backend is added as a dependency and wired automatically, so no cloud API key is required.
-- **StartOS-aware skills** — a `start-cli` skill for administering this server (after *Login to StartOS*) and a `startos-support` skill backed by the Start9 documentation knowledge bundle, refreshed in the background.
+- **Optional local inference** — choose Ollama, vLLM, or llama.cpp in the _Configure Provider_ action and the backend is added as a dependency and wired automatically, so no cloud API key is required.
+- **StartOS-aware skills** — a `start-cli` skill for administering this server (after _Login to StartOS_) and a `startos-support` skill backed by the Start9 documentation knowledge bundle, refreshed in the background.
 
 ## Getting set up
 
@@ -25,9 +25,10 @@ Hermes Agent runs an LLM of your choosing that can execute commands on your beha
    - **OpenAI Codex OAuth** for ChatGPT/Codex access — pick a default model; the action returns a browser URL and device code instead of asking for raw tokens.
 
    The model you pick here is the **default**. You can switch models anytime from within Hermes chat with the `/model` command.
+
 4. If you chose **OpenAI Codex OAuth**, open the returned URL, enter the code, then run **Complete OpenAI Codex OAuth**.
 5. Open the **Web Dashboard** interface. Confirm the chat loads and that you can send a prompt. The **LLM Provider** health check turns green once a provider resolves.
-6. *(Optional)* Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. It asks for your StartOS master password, uses it for that login action, and stores an enrolled `start-cli` identity key on Hermes' data volume. **This grants the agent root-equivalent access — only do this on a machine you treat as expendable.**
+6. _(Optional)_ Run **Login to StartOS** to authenticate the bundled `start-cli` so the agent can administer this server. It asks for your StartOS master password, uses it for that login action, and stores an enrolled `start-cli` identity key on Hermes' data volume. **This grants the agent root-equivalent access — only do this on a machine you treat as expendable.**
 7. Run **Revoke StartOS Access** if you later want to cut off that access without uninstalling the service. It un-enrolls Hermes' key from your server and deletes it, so there is no leftover session to clean up by hand.
 
 ## Using Hermes
@@ -42,13 +43,13 @@ Connect Telegram, Discord, Signal, Slack, Matrix, and others from the dashboard'
 
 ### Server administration & support
 
-- After *Login to StartOS*, the agent can use `start-cli` to read service status, manage packages, send notifications, and more.
-- *Revoke StartOS Access* removes Hermes' stored `start-cli` authentication. Run *Login to StartOS* again if you want to grant access back.
+- After _Login to StartOS_, the agent can use `start-cli` to read service status, manage packages, send notifications, and more.
+- _Revoke StartOS Access_ removes Hermes' stored `start-cli` authentication. Run _Login to StartOS_ again if you want to grant access back.
 - Ask the agent about StartOS, StartTunnel, or installed packages and it will answer from the bundled Start9 documentation knowledge bundle.
 
 ## Limitations
 
 - **Privacy.** With a cloud provider, every prompt and its context is sent to that provider. Treat anything you type as visible to them. Use Ollama, vLLM, or llama.cpp to keep inference on-device.
-- **Destructive capability.** After *Login to StartOS*, the agent can run commands that uninstall services, change configuration, or render the server unusable. There is no built-in confirmation step; if you want that guardrail, don't run *Login to StartOS*. If you already granted access, run *Revoke StartOS Access* to remove the stored `start-cli` authentication.
+- **Destructive capability.** After _Login to StartOS_, the agent can run commands that uninstall services, change configuration, or render the server unusable. There is no built-in confirmation step; if you want that guardrail, don't run _Login to StartOS_. If you already granted access, run _Revoke StartOS Access_ to remove the stored `start-cli` authentication.
 - **Support docs scope.** The bundled knowledge covers StartOS, StartTunnel, and packages — not the s9pk Packaging book or Bitcoin Guides.
 - **MCP.** Live StartOS tools over the Model Context Protocol are planned for a future release; for now server administration is via the `start-cli` skill.

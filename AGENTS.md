@@ -6,13 +6,12 @@ Develop it inside a StartOS packaging workspace created by `start-cli s9pk init-
 which provides the packaging guide and agent context one level up. If you're reading this in a
 bare clone with no workspace, the full guide is at <https://docs.start9.com/packaging>.
 
-Work this package's `TODO.md` from top to bottom. Keep `README.md` (architecture, for developers and LLMs) and `instructions.md` (end-user docs) in sync with your changes.
+Work this package's `TODO.md` from top to bottom. Keep `README.md` (technical reference for an AI support or administering agent) and `instructions.md` (end-user docs) in sync with your changes.
 
 ## This repo
 
-- **Package id is `hermes-agent`.** The single exported interface is the `ui` "Web Dashboard" (host id `ui-multi`, interface id `ui` — both exported from `startos/interfaces.ts`); nothing is exported for dependents.
-- **Local-inference backends (Ollama, vLLM, llama.cpp) are optional runtime dependencies selected in the *Configure Provider* action**, not npm `-startos` packages. `setupDependencies` (`startos/dependencies.ts`) flips the chosen one to a `running` dep reactively off Hermes' own `config.yaml`. Their OpenAI-compatible `api` endpoints (all on host id `api-multi`, interface id `api`) are resolved over the LXC bridge at apply time via `sdk.host.get(effects, { hostId, packageId }, …)` — string-literal ids, since there's no sibling source to import from. The dependency must be installed and running before Configure Provider can wire it.
-
-## Inspecting a running install
-
-To run a command inside the service's container (read its generated config, grep app logs), use `start-cli package attach hermes-agent -n hermes-sub -- <cmd>`. Select the subcontainer by **name** with `-n` (the name passed to `SubContainer.of` in `main.ts` — here `hermes-sub`) or by image with `-i`. Note: `-s/--subcontainer` matches the internal **Guid**, not the name, so passing a name to `-s` fails with "no matching subcontainers".
+- **Don't track the active backend in `store.json`.** `dependencies.ts` derives it reactively from `config.yaml`'s `model.provider`, so it follows a dashboard edit as well as the action. The store's `provider` field is for form pre-fill only.
+- **The local-inference dependency ids are string literals on purpose** — there is no sibling `-startos` package to import them from. Note the mismatch: the provider id is `llamacpp`, the package id is `llama-cpp`.
+- **The `ui` interface's `path: '/login'` is a workaround, not a preference.** Hermes' auth gate skips its login interstitial when exactly one provider is registered and redirects into `/auth/login?provider=…`; with `basic_auth` as the only provider that route raises `NotImplementedError` and `/` serves a 500, recovering only on reload. `/login` is in upstream's public-path allowlist. Revert to `''` once upstream excludes password-only providers from auto-SSO — `TODO.md` tracks it.
+- **The root-CA oneshot is what lets `start-cli` reach StartOS**, which speaks HTTPS with the device's own certificate. Dropping it breaks server administration with a TLS error rather than an auth one.
+- **Skills and the baseline knowledge bundle live in the image, outside the data volume**, so the agent cannot edit them and they update with the package. Don't move them onto the volume.
