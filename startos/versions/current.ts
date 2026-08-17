@@ -1,43 +1,33 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2026.8.13:2',
+  version: '2026.8.16:0',
   releaseNotes: {
-    en_US: `Fixes two service-lifecycle problems.
+    en_US: `Updated Hermes Agent to 2026.8.16 (upstream 0.20.2), a patch release rolling up roughly 397 merged pull requests since 2026.8.13 — fixes across the desktop app, the CLI, the gateway, cron and the installers. Upstream is publishing curated notes for this whole window with 0.21.0.
 
-Startup no longer stalls: the ownership repair that runs at boot walked the whole Hermes data directory — including any repositories and build caches the agent had created there — holding the dashboard and gateway offline for minutes on a well-used install. It now repairs only the paths StartOS itself writes.
+Also requests the StartOS root certificate against an address the OS still issues for, rather than the retired service-hostname form. That certificate is what lets the agent talk to your server, and it is installed on every start.
 
-Long-running sessions no longer leave processes behind: subprocesses orphaned when a goal or tool session ends are now cleaned up instead of accumulating for the life of the container.
+Full upstream changes: https://github.com/NousResearch/hermes-agent/compare/v2026.8.13...v2026.8.16`,
+    es_ES: `Hermes Agent actualizado a 2026.8.16 (upstream 0.20.2), una versión de parche que agrupa unas 397 solicitudes de incorporación fusionadas desde 2026.8.13: correcciones en la aplicación de escritorio, la CLI, la pasarela, cron y los instaladores. Upstream publicará las notas detalladas de toda esta ventana con la 0.21.0.
 
-Hermes Agent is unchanged at 2026.8.13 (upstream 0.20.1).`,
-    es_ES: `Corrige dos problemas del ciclo de vida del servicio.
+Además, solicita el certificado raíz de StartOS para una dirección que el sistema aún emite, en lugar del formato de nombre de host de servicio retirado. Ese certificado es lo que permite al agente comunicarse con tu servidor y se instala en cada arranque.
 
-El arranque ya no se atasca: la reparación de propiedad que se ejecuta al inicio recorría todo el directorio de datos de Hermes —incluidos los repositorios y las cachés de compilación que el agente hubiera creado allí—, lo que dejaba el panel y la pasarela fuera de servicio durante minutos en una instalación con mucho uso. Ahora solo repara las rutas que escribe StartOS.
+Todos los cambios originales: https://github.com/NousResearch/hermes-agent/compare/v2026.8.13...v2026.8.16`,
+    de_DE: `Hermes Agent auf 2026.8.16 aktualisiert (Upstream 0.20.2), eine Patch-Version, die rund 397 zusammengeführte Pull Requests seit 2026.8.13 bündelt — Korrekturen in der Desktop-App, der CLI, dem Gateway, bei Cron und den Installationsprogrammen. Upstream veröffentlicht die ausführlichen Hinweise zu diesem gesamten Zeitraum mit 0.21.0.
 
-Las sesiones prolongadas ya no dejan procesos atrás: los subprocesos que quedan huérfanos al terminar una sesión de objetivo o de herramienta ahora se limpian en lugar de acumularse durante toda la vida del contenedor.
+Fordert außerdem das StartOS-Stammzertifikat für eine Adresse an, für die das System weiterhin ausstellt, statt für die ausgemusterte Dienst-Hostnamen-Form. Dieses Zertifikat ermöglicht dem Agenten die Kommunikation mit Ihrem Server und wird bei jedem Start installiert.
 
-Hermes Agent se mantiene en 2026.8.13 (upstream 0.20.1).`,
-    de_DE: `Behebt zwei Probleme im Dienstlebenszyklus.
+Alle Änderungen im Originalprojekt: https://github.com/NousResearch/hermes-agent/compare/v2026.8.13...v2026.8.16`,
+    pl_PL: `Zaktualizowano Hermes Agent do wersji 2026.8.16 (upstream 0.20.2) — wydanie poprawkowe zbierające około 397 scalonych pull requestów od wersji 2026.8.13: poprawki w aplikacji desktopowej, CLI, bramie, cronie i instalatorach. Upstream opublikuje szczegółowe informacje o całym tym okresie wraz z wersją 0.21.0.
 
-Der Start hängt nicht mehr: Die Eigentümer-Reparatur beim Start durchlief das gesamte Hermes-Datenverzeichnis — einschließlich aller dort vom Agenten angelegten Repositorys und Build-Caches — und hielt Dashboard und Gateway auf einer viel genutzten Installation minutenlang offline. Sie repariert jetzt nur noch die Pfade, die StartOS selbst schreibt.
+Ponadto żąda certyfikatu głównego StartOS dla adresu, dla którego system nadal wystawia certyfikaty, zamiast wycofanej formy nazwy hosta usługi. To właśnie ten certyfikat umożliwia agentowi komunikację z serwerem i jest instalowany przy każdym uruchomieniu.
 
-Lang laufende Sitzungen lassen keine Prozesse mehr zurück: Unterprozesse, die beim Ende einer Ziel- oder Werkzeugsitzung verwaisen, werden jetzt aufgeräumt, statt sich über die gesamte Laufzeit des Containers anzusammeln.
+Pełna lista zmian w projekcie źródłowym: https://github.com/NousResearch/hermes-agent/compare/v2026.8.13...v2026.8.16`,
+    fr_FR: `Hermes Agent mis à jour vers 2026.8.16 (amont 0.20.2), une version corrective qui regroupe environ 397 demandes de tirage fusionnées depuis 2026.8.13 : correctifs dans l'application de bureau, la CLI, la passerelle, cron et les installateurs. L'amont publiera les notes détaillées de toute cette période avec la 0.21.0.
 
-Hermes Agent bleibt unverändert bei 2026.8.13 (Upstream 0.20.1).`,
-    pl_PL: `Naprawia dwa problemy cyklu życia usługi.
+Demande également le certificat racine de StartOS pour une adresse que le système délivre encore, plutôt que pour la forme de nom d'hôte de service retirée. Ce certificat est ce qui permet à l'agent de dialoguer avec votre serveur, et il est installé à chaque démarrage.
 
-Uruchamianie już się nie zacina: naprawa właściciela plików wykonywana przy starcie przechodziła przez cały katalog danych Hermesa — łącznie z repozytoriami i pamięciami podręcznymi kompilacji utworzonymi tam przez agenta — przez co panel i brama pozostawały niedostępne przez wiele minut na intensywnie używanej instalacji. Teraz naprawiane są tylko ścieżki zapisywane przez StartOS.
-
-Długo działające sesje nie pozostawiają już procesów: podprocesy osierocone po zakończeniu sesji celu lub narzędzia są teraz sprzątane, zamiast gromadzić się przez cały czas życia kontenera.
-
-Hermes Agent pozostaje w wersji 2026.8.13 (upstream 0.20.1).`,
-    fr_FR: `Corrige deux problèmes du cycle de vie du service.
-
-Le démarrage ne bloque plus : la réparation des propriétaires effectuée au démarrage parcourait l'intégralité du répertoire de données de Hermes — y compris les dépôts et les caches de compilation que l'agent y avait créés —, laissant le tableau de bord et la passerelle hors service pendant plusieurs minutes sur une installation très utilisée. Elle ne répare désormais que les chemins écrits par StartOS.
-
-Les sessions de longue durée ne laissent plus de processus derrière elles : les sous-processus orphelins à la fin d'une session d'objectif ou d'outil sont maintenant nettoyés au lieu de s'accumuler pendant toute la durée de vie du conteneur.
-
-Hermes Agent reste en 2026.8.13 (amont 0.20.1).`,
+Ensemble des modifications en amont : https://github.com/NousResearch/hermes-agent/compare/v2026.8.13...v2026.8.16`,
   },
   migrations: {
     up: async ({ effects }) => {},
