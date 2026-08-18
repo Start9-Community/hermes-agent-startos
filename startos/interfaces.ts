@@ -28,7 +28,7 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     // unauthenticated `/` serves a 500 (recovering only on reload, via the gate's
     // one-shot loop guard). `/login` is in upstream's public-path allowlist and
     // renders the credential form directly. Revert to '' once upstream excludes
-    // password-only providers from auto-SSO — see TODO.md.
+    // password-only providers from auto-SSO.
     path: '/login',
     query: {},
   })
