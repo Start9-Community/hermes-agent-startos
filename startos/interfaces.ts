@@ -21,7 +21,6 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     masked: false,
     schemeOverride: null,
     username: null,
-    // Upstream now excludes password providers from automatic OAuth redirects.
     path: '',
     query: {},
   })

@@ -28,6 +28,5 @@ verified, tried, and decided belongs in the commit message and the PR body.
 
 - **Don't track the active backend in `store.json`.** `dependencies.ts` derives it reactively from `config.yaml`'s `model.provider`, so it follows a dashboard edit as well as the action. The store's `provider` field is for form pre-fill only.
 - **The local-inference dependency ids are string literals on purpose** — there is no sibling `-startos` package to import them from. Note the mismatch: the provider id is `llamacpp`, the package id is `llama-cpp`.
-- **The `ui` interface opens the root.** Hermes 0.21.3 excludes password providers from automatic OAuth redirects. Keep password-form and existing-session behavior covered when upgrading; the former `/login` workaround is retired.
 - **The root-CA oneshot is what lets `start-cli` reach StartOS**, which speaks HTTPS with the device's own certificate. Dropping it breaks server administration with a TLS error rather than an auth one.
 - **Skills and the baseline knowledge bundle live in the image, outside the data volume**, so the agent cannot edit them and they update with the package. Don't move them onto the volume.

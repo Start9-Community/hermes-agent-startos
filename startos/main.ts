@@ -52,10 +52,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // hash is always in place before the dashboard process next reads it.
   await configYaml.read((c) => c.skills?.external_dirs).const(effects)
 
-  // The dashboard's own LXC-bridge (lxcbr0) URL for the `ui` interface, e.g.
-  // `http://10.0.3.1:9119/login`. Replaces the retired `hermes-agent.startos:<port>`
-  // DNS name for the in-box health check. The map fn returns just the resolved
-  // URL, so `.const()` re-runs `main` only if that URL changes.
+  // The dashboard's own LXC-bridge (lxcbr0) URL for the `ui` interface. The map
+  // fn returns just the resolved URL, so `.const()` re-runs `main` only if it changes.
   const uiUrl = await sdk.host
     .getOwn(effects, uiHostId, (host) => {
       const iface = Object.values(host?.bindings ?? {})
@@ -69,13 +67,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     })
     .const()
 
-  // `addressInfo.suffix` is the interface's own path, so `uiUrl` ends in `/login`.
-  // Resolve the probe against the origin rather than appending to it: upstream
-  // matches `/login` as a public *prefix*, so `${uiUrl}/api/status` serves the
-  // login page HTML with a 200. `checkWebUrl` succeeds on any HTTP response, so
-  // that probe would report the dashboard healthy while never reaching its status
-  // endpoint at all.
-  const statusUrl = uiUrl && new URL('/api/status', uiUrl).href
+  const statusUrl = uiUrl && `${uiUrl}/api/status`
 
   const sub = sdk.SubContainer.of(
     effects,

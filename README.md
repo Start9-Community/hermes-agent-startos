@@ -110,13 +110,11 @@ Note the id mismatch on one of them: the provider is named one thing in the conf
 
 One interface.
 
-| Interface     | Id   | Type | Port | Path     | Description                                                 |
-| ------------- | ---- | ---- | ---- | -------- | ----------------------------------------------------------- |
-| Web Dashboard | `ui` | ui   | 9119 | `/` | Chat, configuration, sessions, skills, logs, and scheduling |
+| Interface     | Id   | Type | Port | Description                                                 |
+| ------------- | ---- | ---- | ---- | ----------------------------------------------------------- |
+| Web Dashboard | `ui` | ui   | 9119 | Chat, configuration, sessions, skills, logs, and scheduling |
 
 Bound on the `ui-multi` MultiHost over HTTP and not masked.
-
-**The interface opens the dashboard root.** Hermes 0.21.3 excludes password-only providers from automatic OAuth redirects, so unauthenticated visitors receive the password form and authenticated visitors open the dashboard. The former `/login` workaround is retired.
 
 The messaging gateway is not exported — it reaches out rather than being reached.
 
@@ -222,12 +220,11 @@ A restored instance comes back configured, still authenticated to its provider, 
 ## Limitations and Differences
 
 1. **The dashboard cannot serve without a password.** The auth gate fails closed on a non-loopback bind, so this is enforced rather than advised.
-2. **The interface opens the root**, using upstream's password-provider redirect fix.
-3. **Granting server access gives an AI agent operational control of the server**, and the credential for it is in the backup.
-4. **Skills and the baseline knowledge bundle are image-owned**, so the agent cannot edit them and they reset on upgrade.
-5. **Hermes owns its own configuration.** The package writes a few keys and preserves the rest, so dashboard edits and action edits share one file.
-6. **Cloud providers send conversations off the box.** Local runtimes require the corresponding package.
-7. **The password can only be changed while stopped.**
+2. **Granting server access gives an AI agent operational control of the server**, and the credential for it is in the backup.
+3. **Skills and the baseline knowledge bundle are image-owned**, so the agent cannot edit them and they reset on upgrade.
+4. **Hermes owns its own configuration.** The package writes a few keys and preserves the rest, so dashboard edits and action edits share one file.
+5. **Cloud providers send conversations off the box.** Local runtimes require the corresponding package.
+6. **The password can only be changed while stopped.**
 
 ---
 
@@ -257,7 +254,7 @@ dependencies: # at most one, derived from config.yaml's model.provider
   - vllm
   - llama-cpp # provider id in config is `llamacpp`
 interfaces:
-  ui: { type: ui, port: 9119, path: '' }
+  ui: { type: ui, port: 9119 }
 actions:
   - set-dashboard-password # only-stopped
   - configure-provider
