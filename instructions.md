@@ -35,7 +35,7 @@ Hermes Agent runs an LLM of your choosing that can execute commands on your beha
 
 ### Web Dashboard
 
-The dashboard is your main surface: chat with the agent, edit configuration, browse sessions and memory, toggle skills, view logs and cost analytics, and schedule recurring prompts (cron). Opening the interface takes you to a login page; sign in as `admin` with the password from **Set Dashboard Password**. Lost it? Stop Hermes and run that action again to set a new one.
+The dashboard is your main surface: chat with the agent, edit configuration, browse sessions and memory, toggle skills, view logs and cost analytics, and schedule recurring prompts (cron). Opening the interface takes you to the dashboard, or to its login page if you are signed out; sign in as `admin` with the password from **Set Dashboard Password**. Lost it? Stop Hermes and run that action again to set a new one.
 
 ### Messaging channels
 

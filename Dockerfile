@@ -3,8 +3,8 @@
 # the official upstream image. We do NOT fork Hermes — the dashboard and gateway
 # are the upstream binaries; StartOS provides auth, config forms, and lifecycle.
 #
-# To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v2026.9.7
-FROM nousresearch/hermes-agent:v2026.9.7@sha256:63bfb6d732f49a55d453e801057273785cc61e0f6ee43db3fa2f2a79846301b7
+# To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v2026.9.14
+FROM nousresearch/hermes-agent:v2026.9.14@sha256:99641e57ec762c59e54cb44aa6746b7fc68c18b3c5ddb088af54234c613d9294
 
 ARG START_CLI_VERSION
 
