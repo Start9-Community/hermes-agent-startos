@@ -91,14 +91,14 @@ That has a consequence worth stating plainly: **a setting changed in the dashboa
 
 ## Dependencies
 
-Three are declared optional, and **at most one is required** — derived from whichever local runtime the configuration names.
+Three are declared optional, and **at most one is enabled** — whichever local runtime the configuration names. When enabled it must be running, at or above the version in the table, with its health check passing.
 
-| Provider selected | Dependency  | Health check |
-| ----------------- | ----------- | ------------ |
-| Ollama            | `ollama`    | `primary`    |
-| vLLM              | `vllm`      | `primary`    |
-| llama.cpp         | `llama-cpp` | `primary`    |
-| A cloud provider  | None        | —            |
+| Provider selected | Dependency  | Version            | Health check |
+| ----------------- | ----------- | ------------------ | ------------ |
+| Ollama            | `ollama`    | `>=0.31.2:2`       | `primary`    |
+| vLLM              | `vllm`      | `>=0.23.1-rc.0:13` | `primary`    |
+| llama.cpp         | `llama-cpp` | `>=1.0.9994:1`     | `primary`    |
+| A cloud provider  | None        | —                  | —            |
 
 Choose a cloud or custom provider and this package depends on nothing.
 
@@ -138,7 +138,7 @@ Generates a dashboard password and writes its hash into the configuration.
 
 - **When to run it:** **only while stopped** — the configuration is read at start.
 - **What it changes:** the password hash in `config.yaml`. The plaintext is returned once and stored nowhere.
-- **Repeat safety:** each run replaces the password.
+- **Repeat safety:** each run replaces the password and mints a new session-signing secret, so every signed-in dashboard session is signed out. When a password already exists the action asks for confirmation first.
 - **Outputs:** the username and the new password.
 
 ### Configure Provider
@@ -147,6 +147,7 @@ Chooses and configures the LLM backend — a local runtime on this server, or a 
 
 - **What it changes:** the provider routing in `config.yaml`, credentials in `.env`, and the selection in the store for form pre-fill.
 - **Cost:** applies on restart; the declared dependency changes with it.
+- **API keys are never pre-filled.** A re-run asks for the key again, whatever else it pre-fills.
 - **Repeat safety:** idempotent.
 - **Choosing a cloud provider sends your conversations to it.** A local runtime keeps them on the box, at the cost of running the model yourself.
 - **One provider uses a device-code login**, which cannot complete in a single action — see below.
@@ -155,7 +156,7 @@ Chooses and configures the LLM backend — a local runtime on this server, or a 
 
 **Not user-facing in the Actions list.** It is reachable only through the task raised when a device-code login is started, so a user is never told to go and find it.
 
-- **What it changes:** writes the obtained token into the application's OAuth state.
+- **What it changes:** writes the obtained token into the application's OAuth state, sets the provider to OpenAI Codex and restarts Hermes. It asks for confirmation first.
 - **When it appears:** only while a login is genuinely pending and unexpired.
 
 ### Login to StartOS

@@ -13,7 +13,7 @@ export const completeCodexOAuth = sdk.Action.withoutInput(
     description: i18n(
       'Finish the OpenAI Codex browser login after entering the device code',
     ),
-    warning: null,
+    warning: i18n('Hermes restarts and uses OpenAI Codex as its LLM provider.'),
     allowedStatuses: 'any',
     group: null,
     // Surfaced only via the critical task Configure Provider creates when a

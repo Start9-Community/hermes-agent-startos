@@ -123,7 +123,9 @@ const prefillModel = <V extends Record<string, string>>(
 const apiKeyField = (placeholder: string) =>
   Value.text({
     name: i18n('API Key'),
-    description: i18n('API key for this provider'),
+    description: i18n(
+      'The form never shows a saved key, so enter it each time you run this action.',
+    ),
     required: true,
     default: null,
     masked: true,
@@ -137,7 +139,7 @@ const providerVariants = Variants.of({
       baseUrl: Value.text({
         name: i18n('Base URL'),
         description: i18n(
-          'OpenAI-compatible API base URL, e.g. https://api.openai.com/v1',
+          'Include the version path your provider documents, such as /v1.',
         ),
         required: true,
         default: null,
@@ -194,7 +196,7 @@ const inputSpec = InputSpec.of({
   provider: Value.union({
     name: i18n('LLM Provider'),
     description: i18n(
-      'Choose the model backend. Ollama, vLLM and llama.cpp run locally on your server (added as a dependency); the rest are cloud providers requiring an API key or OAuth tokens.',
+      "A cloud provider receives every prompt and its context. A local one keeps them on this server, and the service you choose becomes a dependency: install and start it first.\n- OpenAI-Compatible: any service with an OpenAI-compatible API, at the base URL and with the API key you enter\n- OpenAI Codex OAuth: sign in to your OpenAI account in a browser with a one-time code; no API key\n- Google Gemini: Google's API, with your API key\n- xAI Grok: xAI's API, with your API key\n- Anthropic Claude: Anthropic's API, with your API key\n- Ollama (local): models served by Ollama on this server\n- vLLM (local): models served by vLLM on this server\n- llama.cpp (local): models served by llama.cpp on this server",
     ),
     default: 'ollama',
     variants: providerVariants,
@@ -306,13 +308,16 @@ export const configureProvider = sdk.Action.withInput(
     }
     const envPatch: Record<string, string | undefined> = {}
     let codexOAuth:
-      Awaited<ReturnType<typeof requestCodexDeviceCode>> | undefined
+      | Awaited<ReturnType<typeof requestCodexDeviceCode>>
+      | undefined
 
     if (p.selection === 'ollama') {
       const baseUrl = await depApiBaseUrl(effects, 'ollama')
       if (!baseUrl) {
         throw new Error(
-          'Ollama is not yet reachable on the internal network. Install and start Ollama, then run Configure Provider again.',
+          i18n(
+            'Ollama is not yet reachable on the internal network. Install and start Ollama, then run Configure Provider again.',
+          ),
         )
       }
       model = {
@@ -325,13 +330,17 @@ export const configureProvider = sdk.Action.withInput(
       const baseUrl = await depApiBaseUrl(effects, 'vllm')
       if (!baseUrl) {
         throw new Error(
-          'vLLM is not yet reachable on the internal network. Install and start vLLM, then run Configure Provider again.',
+          i18n(
+            'vLLM is not yet reachable on the internal network. Install and start vLLM, then run Configure Provider again.',
+          ),
         )
       }
       const key = await readDependencyApiKey(effects, 'vllm')
       if (!key) {
         throw new Error(
-          'vLLM is selected but its API key could not be read from vllm:public/credentials.json. Make sure vLLM is installed, running, and at a version that publishes its public credentials (>=0.16.0:0.1).',
+          i18n(
+            'vLLM is selected but its API key could not be read from vllm:public/credentials.json. Make sure vLLM is installed, running, and at a version that publishes its public credentials (>=0.16.0:0.1).',
+          ),
         )
       }
       model = {
@@ -344,7 +353,9 @@ export const configureProvider = sdk.Action.withInput(
       const baseUrl = await depApiBaseUrl(effects, 'llama-cpp')
       if (!baseUrl) {
         throw new Error(
-          'llama.cpp is not yet reachable on the internal network. Install and start llama.cpp, then run Configure Provider again.',
+          i18n(
+            'llama.cpp is not yet reachable on the internal network. Install and start llama.cpp, then run Configure Provider again.',
+          ),
         )
       }
       // llama.cpp runs keyless; its basic auth is enforced only at the OS
@@ -394,7 +405,7 @@ export const configureProvider = sdk.Action.withInput(
       }
       envPatch.ANTHROPIC_API_KEY = p.value.apiKey
     } else {
-      throw new Error('Unknown provider selection')
+      throw new Error(i18n('Unknown provider selection'))
     }
 
     await configYaml.merge(effects, { model })

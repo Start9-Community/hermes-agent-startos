@@ -18,7 +18,7 @@ Hermes Agent runs an LLM of your choosing that can execute commands on your beha
 ## Getting set up
 
 1. Open Hermes' **Dashboard** tab. Two critical tasks are waiting.
-2. Run **Set Dashboard Password** and save the password it returns. The username is `admin`. **This is the only time the password is shown** — it is never stored in plaintext. Hermes will not start until you do this: the dashboard holds your API keys and can run commands on your server, so it is never served without a login. Run the same action any time to rotate the password (stop Hermes first).
+2. Run **Set Dashboard Password** and save the password it returns. The username is `admin`. **This is the only time the password is shown** — it is never stored in plaintext. Hermes will not start until you do this: the dashboard holds your API keys and can run commands on your server, so it is never served without a login. Run the same action any time to rotate the password (stop Hermes first); rotating signs everyone out of the dashboard.
 3. Run **Configure Provider**. Pick your LLM backend:
    - **Ollama**, **vLLM**, or **llama.cpp** for local inference on your server (added as a dependency). **Install and start the backend from the Marketplace first** — Configure Provider wires it over the internal network at apply time and errors if it isn't reachable yet. Then enter the model name your server serves.
    - **Google Gemini**, **xAI Grok**, **Anthropic Claude**, or an **OpenAI-Compatible** endpoint for a cloud provider — supply the API key and pick a **default model** from the dropdown (or type one into the Custom Model field).

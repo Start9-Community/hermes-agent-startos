@@ -84,14 +84,16 @@ export async function readDependencyApiKey(
       sdk.Mounts.of().mountDependency({
         dependencyId,
         volumeId: 'public',
-        subpath: 'credentials.json',
-        mountpoint: '/credentials.json',
-        type: 'file',
+        subpath: null,
+        mountpoint: '/dependency-public',
         readonly: true,
       }),
       `${dependencyId}-creds`,
       async (sub) => {
-        const raw = await fs.readFile(sub.subpath('/credentials.json'), 'utf8')
+        const raw = await fs.readFile(
+          sub.subpath('/dependency-public/credentials.json'),
+          'utf8',
+        )
         return credentialsSchema.parse(JSON.parse(raw)).apiKey
       },
     )
