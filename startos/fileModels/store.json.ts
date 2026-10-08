@@ -11,11 +11,11 @@ import { sdk } from '../sdk'
  * The dashboard password is not here either: only its scrypt hash is persisted,
  * in config.yaml, and Set Dashboard Password returns the plaintext once.
  */
-const shape = z.object({
+const shape = z.looseObject({
   // Last Configure Provider selection id, so the action can pre-fill its form.
   provider: z.string().optional(),
   codexOAuth: z
-    .object({
+    .looseObject({
       userCode: z.string(),
       deviceAuthId: z.string(),
       pollIntervalSeconds: z.number(),

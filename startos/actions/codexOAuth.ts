@@ -1,3 +1,5 @@
+import { i18n } from '../i18n'
+
 const CODEX_OAUTH_CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann'
 const CODEX_ISSUER = 'https://auth.openai.com'
 const CODEX_TOKEN_URL = `${CODEX_ISSUER}/oauth/token`
@@ -69,17 +71,27 @@ export async function requestCodexDeviceCode(
     }
   }
 
-  if (!resp) throw new Error('OpenAI Codex device-code request did not run')
+  if (!resp)
+    throw new Error(i18n('OpenAI Codex device-code request did not run'))
   if (resp.status === 429) {
     const retryAfter = retryAfterSeconds(resp.headers)
     throw new Error(
       retryAfter
-        ? `OpenAI is rate-limiting Codex login requests. Try again in about ${retryAfter}s.`
-        : 'OpenAI is rate-limiting Codex login requests. Wait a minute and try again.',
+        ? i18n(
+            'OpenAI is rate-limiting Codex login requests. Try again in about ${seconds}s.',
+            { seconds: retryAfter },
+          )
+        : i18n(
+            'OpenAI is rate-limiting Codex login requests. Wait a minute and try again.',
+          ),
     )
   }
   if (resp.status !== 200) {
-    throw new Error(`Codex device-code request returned HTTP ${resp.status}`)
+    throw new Error(
+      i18n('Codex device-code request returned HTTP ${status}', {
+        status: resp.status,
+      }),
+    )
   }
 
   const data = await readJson(resp)
@@ -89,7 +101,9 @@ export async function requestCodexDeviceCode(
   const expiresInSeconds = asPositiveInteger(data.expires_in, 15 * 60)
 
   if (!userCode || !deviceAuthId) {
-    throw new Error('Codex device-code response was missing required fields')
+    throw new Error(
+      i18n('Codex device-code response was missing required fields'),
+    )
   }
 
   return {
@@ -106,7 +120,9 @@ export async function completeCodexDeviceCode(
 ): Promise<CodexTokens> {
   if (Date.parse(pending.expiresAt) <= Date.now()) {
     throw new Error(
-      'The OpenAI Codex browser login expired. Run Configure Provider again.',
+      i18n(
+        'The OpenAI Codex browser login expired. Run Configure Provider again.',
+      ),
     )
   }
 
@@ -133,7 +149,9 @@ export async function completeCodexDeviceCode(
     }
     if (pollResp.status !== 403 && pollResp.status !== 404) {
       throw new Error(
-        `Codex browser-login polling returned HTTP ${pollResp.status}`,
+        i18n('Codex browser-login polling returned HTTP ${status}', {
+          status: pollResp.status,
+        }),
       )
     }
 
@@ -146,7 +164,10 @@ export async function completeCodexDeviceCode(
 
   if (!codeResp) {
     throw new Error(
-      `OpenAI has not confirmed the browser login yet. Open ${CODEX_DEVICE_URL}, enter ${pending.userCode}, then run this action again.`,
+      i18n(
+        'OpenAI has not confirmed the browser login yet. Open ${url}, enter ${code}, then run this action again.',
+        { url: CODEX_DEVICE_URL, code: pending.userCode },
+      ),
     )
   }
 
@@ -154,7 +175,7 @@ export async function completeCodexDeviceCode(
   const codeVerifier = asString(codeResp.code_verifier)
   if (!authorizationCode || !codeVerifier) {
     throw new Error(
-      'Codex browser-login response was missing token exchange fields',
+      i18n('Codex browser-login response was missing token exchange fields'),
     )
   }
 
@@ -176,12 +197,21 @@ export async function completeCodexDeviceCode(
     const retryAfter = retryAfterSeconds(tokenResp.headers)
     throw new Error(
       retryAfter
-        ? `OpenAI is rate-limiting Codex token exchange. Try again in about ${retryAfter}s.`
-        : 'OpenAI is rate-limiting Codex token exchange. Wait a minute and try again.',
+        ? i18n(
+            'OpenAI is rate-limiting Codex token exchange. Try again in about ${seconds}s.',
+            { seconds: retryAfter },
+          )
+        : i18n(
+            'OpenAI is rate-limiting Codex token exchange. Wait a minute and try again.',
+          ),
     )
   }
   if (tokenResp.status !== 200) {
-    throw new Error(`Codex token exchange returned HTTP ${tokenResp.status}`)
+    throw new Error(
+      i18n('Codex token exchange returned HTTP ${status}', {
+        status: tokenResp.status,
+      }),
+    )
   }
 
   const tokens = await readJson(tokenResp)
@@ -189,7 +219,9 @@ export async function completeCodexDeviceCode(
   const refreshToken = asString(tokens.refresh_token)
   if (!accessToken || !refreshToken) {
     throw new Error(
-      'Codex token exchange did not return both access and refresh tokens',
+      i18n(
+        'Codex token exchange did not return both access and refresh tokens',
+      ),
     )
   }
 

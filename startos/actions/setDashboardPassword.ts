@@ -7,12 +7,18 @@ import { dashboardUsername, hermesPasswordHash } from '../utils'
 export const setDashboardPassword = sdk.Action.withoutInput(
   'set-dashboard-password',
 
-  async () => ({
+  async ({ effects }) => ({
     name: i18n('Set Dashboard Password'),
     description: i18n(
       '<p>Generate a new random password for signing in to the Hermes web dashboard.</p><p>This action can only run while Hermes is stopped, so the dashboard loads the new password the next time it starts.</p>',
     ),
-    warning: null,
+    warning: (await configYaml
+      .read((c) => c.dashboard?.basic_auth?.password_hash)
+      .const(effects))
+      ? i18n(
+          'The current dashboard password stops working, and everyone signed in to the dashboard is signed out.',
+        )
+      : null,
     allowedStatuses: 'only-stopped',
     group: null,
     visibility: 'enabled',

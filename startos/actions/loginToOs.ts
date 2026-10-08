@@ -10,7 +10,9 @@ const { InputSpec, Value } = sdk
 const inputSpec = InputSpec.of({
   masterPassword: Value.text({
     name: i18n('StartOS Master Password'),
-    description: i18n('Your StartOS server master password'),
+    description: i18n(
+      'Used once to sign start-cli in to this server. Hermes keeps the login key it receives, not the password.',
+    ),
     required: true,
     default: null,
     placeholder: i18n('Enter master password'),
@@ -70,7 +72,11 @@ export const loginToOs = sdk.Action.withInput(
 
     if (result.exitCode !== 0) {
       throw new Error(
-        `Login failed: ${String(result.stderr || result.stdout || 'Unknown error')}`,
+        i18n('Login failed: ${error}', {
+          error: String(
+            result.stderr || result.stdout || i18n('Unknown error'),
+          ),
+        }),
       )
     }
 

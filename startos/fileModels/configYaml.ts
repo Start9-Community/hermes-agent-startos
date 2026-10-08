@@ -6,9 +6,9 @@ import { sdk } from '../sdk'
  *
  * Hermes (and its dashboard) is the source of truth — the user edits most of
  * this through the dashboard. We only touch a few keys (skills wiring, provider
- * routing, dashboard auth, and — in the future — mcp_servers). The SDK's `z`
- * makes every object loose, so keys we don't model survive a merge() instead of
- * being stripped by the schema parse, preserving 2-way binding with the dashboard.
+ * routing, dashboard auth, and — in the future — mcp_servers). Every object is
+ * a looseObject, so keys we don't model survive a merge() instead of being
+ * stripped by the schema parse, preserving 2-way binding with the dashboard.
  *
  * The `model` block is Hermes' provider routing (see cli-config.yaml.example
  * upstream). `provider` selects the backend ('custom' for any OpenAI-compatible
@@ -26,9 +26,9 @@ import { sdk } from '../sdk'
  * `init/watchCredentials.ts` reads. `secret` is the session token-signing key,
  * seeded once in init (see initializeService.ts).
  */
-const shape = z.object({
+const shape = z.looseObject({
   model: z
-    .object({
+    .looseObject({
       default: z.string().optional(),
       provider: z.string().optional(),
       base_url: z.string().optional(),
@@ -36,9 +36,9 @@ const shape = z.object({
     })
     .optional(),
   dashboard: z
-    .object({
+    .looseObject({
       basic_auth: z
-        .object({
+        .looseObject({
           username: z.string().optional(),
           password_hash: z.string().optional(),
           secret: z.string().optional(),
@@ -47,19 +47,19 @@ const shape = z.object({
     })
     .optional(),
   skills: z
-    .object({
+    .looseObject({
       external_dirs: z.array(z.string()).catch([]),
     })
     .optional(),
   plugins: z
-    .object({
+    .looseObject({
       enabled: z.array(z.string()).catch([]),
       disabled: z.array(z.string()).catch([]),
     })
     .optional(),
   // Remote MCP servers. Empty until the StartOS MCP server ships; then the
   // Grant Access action writes an entry here pointing at https://<osIp>/mcp/v1.
-  mcp_servers: z.object({}).optional(),
+  mcp_servers: z.looseObject({}).optional(),
 })
 
 export const configYaml = FileHelper.yaml(
