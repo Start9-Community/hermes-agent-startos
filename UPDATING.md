@@ -28,7 +28,7 @@ This package runs the **official upstream `nousresearch/hermes-agent` image** �
 
 - **`Dockerfile`** — set `FROM nousresearch/hermes-agent:v<new version>@sha256:<new list digest>` and update the `# To bump:` comment to the new tag. Confirm the new image still satisfies the hardcoded assumptions in the rest of the `Dockerfile` (`/opt/hermes/.venv` on PATH, `HERMES_HOME=/opt/data`, root user, `/opt/hermes` workdir).
 - **`startos/utils.ts`** — set `HERMES_VERSION` to `<new version>` (without the leading `v`).
-- **`startos/versions/current.ts`** — edit in place: set `version` to `'<new version>:0'` (the `:N` revision resets to `0` on a new upstream version) and update `releaseNotes` (all locales). Leave `index.ts` and the `current` export untouched. Only spin off a historical version file when the bump carries an `up`/`down` migration.
+- **`startos/versions/current.ts`** — edit in place: set `version` to `'<release date>:0'`, the upstream release's publish date as `YYYY.M.D` (`v0.21.6`, released 2026-10-08, is `2026.10.8:0`); a second release on the same day takes a fourth component (`2026.10.8.1`). Upstream tags semantic versions since `v0.21.6`, which sort below the dates the package already shipped, so the package version stays the date (`gh release view v<version> -R NousResearch/hermes-agent --json publishedAt -q .publishedAt`). The `:N` revision resets to `0` on a new upstream release. Update `releaseNotes` (all locales), naming the upstream version. Leave `index.ts` and the `current` export untouched. Only spin off a historical version file when the bump carries an `up`/`down` migration.
 
 ## The baked `start-cli` (`START_CLI_VERSION`)
 
