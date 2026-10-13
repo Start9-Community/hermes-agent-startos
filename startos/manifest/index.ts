@@ -1,5 +1,6 @@
 import { setupManifest } from '@start9labs/start-sdk'
-import { START_CLI_VERSION } from '../utils'
+import { HERMES_VERSION, START_CLI_VERSION } from '../utils'
+import { current } from '../versions/current'
 import { long, short } from './i18n'
 
 export const manifest = setupManifest({
@@ -19,6 +20,8 @@ export const manifest = setupManifest({
           workdir: '.',
           buildArgs: {
             START_CLI_VERSION,
+            HERMES_VERSION,
+            HERMES_RELEASE_DATE: current.options.version.split(':')[0],
           },
         },
       },

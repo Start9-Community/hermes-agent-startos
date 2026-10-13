@@ -1,7 +1,6 @@
 import { installRootCA } from './actions/loginToOs'
 import { configYaml } from './fileModels/configYaml'
 import { i18n } from './i18n'
-import { uiHostId, uiInterfaceId } from './interfaces'
 import { sdk } from './sdk'
 import {
   BUNDLE_URL,
@@ -27,6 +26,14 @@ from gateway.status import is_gateway_runtime_lock_active
 sys.exit(0 if is_gateway_runtime_lock_active() else 1)
 `
 
+// Probe the daemon inside its own container. Startup must not depend on the
+// host's optional address-override schema (older StartOS lacks lanEnabled).
+// This reads the public health endpoint only, with no auth or address changes.
+const DASHBOARD_PROBE = `import urllib.request
+with urllib.request.urlopen("http://127.0.0.1:${dashboardPort}/api/status", timeout=5) as response:
+    assert response.status == 200
+`
+
 // StartOS supervises each daemon directly, but the Hermes daemons themselves
 // launch session/tool subprocess trees. Make the daemon boundary a Linux child
 // subreaper so descendants orphaned by a completed or interrupted session are
@@ -46,23 +53,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // needs no watch here: Set Dashboard Password is `only-stopped`, so the new
   // hash is always in place before the dashboard process next reads it.
   await configYaml.read((c) => c.skills?.external_dirs).const(effects)
-
-  // The dashboard's own LXC-bridge (lxcbr0) URL for the `ui` interface. The map
-  // fn returns just the resolved URL, so `.const()` re-runs `main` only if it changes.
-  const uiUrl = await sdk.host
-    .getOwn(effects, uiHostId, (host) => {
-      const iface = Object.values(host?.bindings ?? {})
-        .flatMap((b) => Object.values(b.interfaces))
-        .find((i) => i.id === uiInterfaceId)
-      return iface
-        ? iface.addressInfo
-            .filter({ kind: 'bridge', predicate: (h) => !h.ssl })
-            .format('urlstring')[0]
-        : undefined
-    })
-    .const()
-
-  const statusUrl = uiUrl && `${uiUrl}/api/status`
 
   const sub = sdk.SubContainer.of(
     effects,
@@ -158,17 +148,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
           display: i18n('Web Dashboard'),
           gracePeriod: 60_000,
           fn: () =>
-            // `/api/status` is upstream's exact-match public probe path; every
-            // other endpoint 401s behind the auth gate.
-            statusUrl
-              ? sdk.healthCheck.checkWebUrl(effects, statusUrl, {
-                  successMessage: i18n('The dashboard is ready'),
-                  errorMessage: i18n('The dashboard is not ready'),
-                })
-              : Promise.resolve({
-                  result: 'starting' as const,
-                  message: i18n('The dashboard is not ready'),
-                }),
+            runProbeAsHermes(
+              DASHBOARD_PROBE,
+              i18n('The dashboard is ready'),
+              i18n('The dashboard is not ready'),
+            ),
         },
         requires: ['install-root-ca', 'chown'],
       })

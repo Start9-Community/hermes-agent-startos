@@ -1,13 +1,14 @@
 import { sdk } from './sdk'
 import { dashboardPort } from './utils'
 import { i18n } from './i18n'
+import { withAlpnCompatibility } from './bindCompatibility'
 
 // Host id (the sdk.MultiHost.of group) — distinct from the interface id exported on it.
 export const uiHostId = 'ui-multi'
 export const uiInterfaceId = 'ui'
 
 export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
-  const uiMulti = sdk.MultiHost.of(effects, uiHostId)
+  const uiMulti = sdk.MultiHost.of(withAlpnCompatibility(effects), uiHostId)
   const uiMultiOrigin = await uiMulti.bindPort(dashboardPort, {
     protocol: 'http',
   })

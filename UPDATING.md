@@ -1,5 +1,7 @@
 # Updating the upstream version
 
+For native releases, verify the final annotated tag's Docker index receipt; the final image may retain an RC-named registry tag. Never infer its identity from the tag spelling. `docker/set-package-calendar.py` validates the official native install stamp and binds only the StartOS calendar label; it must not replace the native stamp. Its regression tests run with `python3 -m unittest discover -s docker -p 'test_*.py'`.
+
 This package runs the **official upstream `nousresearch/hermes-agent` image** — it does not fork or rebuild Hermes. "Upstream" means that published image. The package also bakes in a `start-cli` binary, which tracks a separate StartOS release (see the bottom of this page).
 
 ## Determining the upstream version

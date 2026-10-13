@@ -37,6 +37,8 @@
 
 One image, built here — upstream's application plus a `start-cli` binary, which is what makes server administration possible at all.
 
+The 2026.10.12 package wraps official Hermes 0.21.7. The Docker index is pinned to the final release's annotated-tag receipt. The native `install-stamp.json` remains unchanged; `startos-package-identity.json` records the wrapper calendar label and its upstream stamp hash. `UPDATING.md` owns the identity checks for future bumps.
+
 | Property      | Value                               |
 | ------------- | ----------------------------------- |
 | Image         | Built from this repo's `Dockerfile` |
@@ -115,6 +117,17 @@ One interface.
 | Web Dashboard | `ui` | ui   | 9119 | Chat, configuration, sessions, skills, logs, and scheduling |
 
 Bound on the `ui-multi` MultiHost over HTTP and not masked.
+The interface adapter accepts SDK 3's ALPN array on newer hosts. On older
+supported hosts it retries only an explicit bind deserialization rejection,
+converting ALPN to the tagged specified form. Unknown/transport errors are
+never retried. TLS, dashboard authentication, port and interface identity stay
+unchanged. Build startos/interfaces.ts with ncc and run
+node docker/test-startos-binding.cjs with its built index.js before deployment.
+The dashboard readiness check probes its public health endpoint inside its own
+container as Hermes, avoiding optional host address fields absent on older
+supported StartOS. It does not change public bindings or authentication. The
+built main canary must define both daemons even when address lookup is unavailable:
+`node docker/test-startup-main.cjs javascript/index.js` after the standard ncc build.
 
 The messaging gateway is not exported — it reaches out rather than being reached.
 

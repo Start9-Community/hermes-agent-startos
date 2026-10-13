@@ -15,6 +15,10 @@ Hermes Agent runs an LLM of your choosing that can execute commands on your beha
 - **Optional local inference** — choose Ollama, vLLM, or llama.cpp in the _Configure Provider_ action and the backend is added as a dependency and wired automatically, so no cloud API key is required.
 - **StartOS-aware skills** — a `start-cli` skill for administering this server (after _Login to StartOS_) and a `startos-support` skill backed by the Start9 documentation knowledge bundle, refreshed in the background.
 
+This package includes Hermes 0.21.7 and the preceding 0.21.6 security fixes. Optional new providers, voice features and integrations require their own configuration; upgrading does not enable them or change your selected provider.
+The Web Dashboard remains compatible with supported hosts using the older TLS
+binding format; no password, provider or network-setting reset is needed.
+
 ## Getting set up
 
 1. Open Hermes' **Dashboard** tab. Two critical tasks are waiting.
@@ -52,5 +56,5 @@ Connect Telegram, Discord, Signal, Slack, Matrix, and others from the dashboard'
 - **Privacy.** With a cloud provider, every prompt and its context is sent to that provider. Treat anything you type as visible to them. Use Ollama, vLLM, or llama.cpp to keep inference on-device.
 - **Destructive capability.** After _Login to StartOS_, the agent can run commands that uninstall services, change configuration, or render the server unusable. There is no built-in confirmation step; if you want that guardrail, don't run _Login to StartOS_. If you already granted access, run _Revoke StartOS Access_ to remove the stored `start-cli` authentication.
 - **Support docs scope.** The bundled knowledge covers StartOS, StartTunnel, and packages — not the s9pk Packaging book or Bitcoin Guides.
-- **Gateway status.** Hermes 0.21.6 may show the messaging gateway as stopped in its dashboard while the StartOS **Messaging Gateway** health check correctly shows it running.
+- **Gateway status.** If the dashboard and StartOS disagree about gateway status, inspect the StartOS **Messaging Gateway** health check and process evidence rather than starting a second gateway.
 - **MCP.** Live StartOS tools over the Model Context Protocol are planned for a future release; for now server administration is via the `start-cli` skill.

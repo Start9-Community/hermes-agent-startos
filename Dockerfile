@@ -3,12 +3,21 @@
 # the official upstream image. We do NOT fork Hermes — the dashboard and gateway
 # are the upstream binaries; StartOS provides auth, config forms, and lifecycle.
 #
-# To bump: docker buildx imagetools inspect nousresearch/hermes-agent:v0.21.6
-FROM nousresearch/hermes-agent:v0.21.6@sha256:55e192fba0cd4fde61142abbff5adeacff40efdb482ccd0ff877924bd274f909
+# Final v0.21.7's annotated release receipt pins this official image index.
+FROM nousresearch/hermes-agent:rc.15-v0.21.7@sha256:444b42594e7f467425872fc35e077a227d377f0fe0726bc818706d62175fad8b
 
 ARG START_CLI_VERSION
+ARG HERMES_VERSION
+ARG HERMES_RELEASE_DATE
 
 USER root
+
+# Bind the package calendar label without replacing native source provenance.
+COPY docker/set-package-calendar.py /tmp/set-package-calendar.py
+RUN python3 /tmp/set-package-calendar.py /opt/hermes \
+      "${HERMES_RELEASE_DATE}" "${HERMES_VERSION}" \
+      71d34bad1045610252eda02ee79549436896e784 \
+    && rm /tmp/set-package-calendar.py
 
 # Tooling: ca-certificates for the StartOS root CA (installed at runtime via the
 # Login action / oneshot), git+jq+ripgrep for the support docs-search skill, and
