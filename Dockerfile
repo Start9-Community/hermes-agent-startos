@@ -29,10 +29,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -fsSL "https://github.com/Start9Labs/start-technologies/releases/download/start-cli%2Fv${START_CLI_VERSION}/start-cli_$(uname -m)-linux" -o /usr/local/bin/start-cli \
     && chmod +x /usr/local/bin/start-cli
 
-# Keep the hermes venv on PATH for every shell the agent's terminal tool spawns.
-ENV PATH="/opt/hermes/.venv/bin:${PATH}"
-RUN echo 'export PATH="/opt/hermes/.venv/bin:$PATH"' > /etc/profile.d/hermes-venv.sh && \
-    ln -sf /opt/hermes/.venv/bin/hermes /usr/local/bin/hermes
+# Keep the hermes venv on PATH for every shell the agent's terminal tool spawns,
+# behind upstream's /opt/hermes/bin/hermes shim, which drops a root caller to the
+# hermes user so a root-run `hermes` cannot leave root-owned state on the volume.
+RUN echo 'export PATH="/opt/hermes/bin:/opt/hermes/.venv/bin:$PATH"' > /etc/profile.d/hermes-venv.sh && \
+    ln -sf /opt/hermes/bin/hermes /usr/local/bin/hermes
 
 # Managed context — image-owned so it updates with normal package upgrades and
 # the agent cannot edit it. Skills are wired into config.yaml via skills.external_dirs
