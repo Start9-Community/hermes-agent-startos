@@ -1,54 +1,21 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import { sdk } from '../sdk'
-import { dataDir, mainMounts } from '../utils'
 
 export const current = VersionInfo.of({
-  version: '2026.10.8:2',
+  version: '2026.10.23:0',
   releaseNotes: {
     en_US:
-      'Fixed Hermes Agent failing to start after a `hermes` command, such as `hermes pm repair`, was run in a root shell from `start-cli package attach`. Updating repairs an affected install; `hermes` commands run as root now act as the hermes user.',
+      'Updated Hermes Agent to 0.22.5, which fixes three vulnerabilities in image decoding (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Requires StartOS 0.4.0.3 or later.',
     es_ES:
-      'Corregido el fallo de arranque de Hermes Agent tras ejecutar un comando `hermes`, como `hermes pm repair`, en un shell de root abierto con `start-cli package attach`. La actualización repara una instalación afectada; los comandos `hermes` ejecutados como root ahora actúan como el usuario hermes.',
+      'Hermes Agent actualizado a 0.22.5, que corrige tres vulnerabilidades en la decodificación de imágenes (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Requiere StartOS 0.4.0.3 o posterior.',
     de_DE:
-      'Behoben: Hermes Agent startete nicht mehr, nachdem ein `hermes`-Befehl wie `hermes pm repair` in einer Root-Shell aus `start-cli package attach` ausgeführt wurde. Das Update repariert eine betroffene Installation; als Root ausgeführte `hermes`-Befehle laufen jetzt als Benutzer hermes.',
+      'Hermes Agent auf 0.22.5 aktualisiert, das drei Sicherheitslücken bei der Bilddekodierung behebt (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Erfordert StartOS 0.4.0.3 oder neuer.',
     pl_PL:
-      'Naprawiono błąd uruchamiania Hermes Agent po wykonaniu polecenia `hermes`, takiego jak `hermes pm repair`, w powłoce root otwartej przez `start-cli package attach`. Aktualizacja naprawia dotkniętą instalację; polecenia `hermes` uruchamiane jako root działają teraz jako użytkownik hermes.',
+      'Zaktualizowano Hermes Agent do wersji 0.22.5, która naprawia trzy podatności w dekodowaniu obrazów (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Wymaga StartOS 0.4.0.3 lub nowszego.',
     fr_FR:
-      "Correction de l'échec du démarrage de Hermes Agent après l'exécution d'une commande `hermes`, comme `hermes pm repair`, dans un shell root ouvert avec `start-cli package attach`. La mise à jour répare une installation touchée ; les commandes `hermes` lancées en root agissent désormais en tant qu'utilisateur hermes.",
+      "Mise à jour de Hermes Agent vers 0.22.5, qui corrige trois vulnérabilités dans le décodage d'images (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Nécessite StartOS 0.4.0.3 ou une version ultérieure.",
   },
   migrations: {
-    up: async ({ effects }) => {
-      // A root-run `hermes` could write anywhere under the volume, which
-      // the boot chown oneshot deliberately does not walk.
-      await sdk.SubContainer.withTemp(
-        effects,
-        { imageId: 'hermes-agent' },
-        mainMounts(),
-        'root-owned-repair',
-        (subc) =>
-          subc.execFail(
-            [
-              'find',
-              dataDir,
-              '-xdev',
-              '(',
-              '-uid',
-              '0',
-              '-o',
-              '-gid',
-              '0',
-              ')',
-              '-exec',
-              'chown',
-              '-h',
-              '1000:1000',
-              '{}',
-              '+',
-            ],
-            { user: 'root' },
-          ),
-      )
-    },
+    up: async () => {},
     down: IMPOSSIBLE,
   },
 })

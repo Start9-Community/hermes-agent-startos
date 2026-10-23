@@ -20,7 +20,7 @@ load_dotenv("${dataDir}/.env")
 resolve_runtime_provider()
 `
 
-// The runtime lock, not get_running_pid: 0.21.6's identity matcher rejects its own launcher.
+// The runtime lock: only a live gateway holds it.
 const GATEWAY_PROBE = `import os, sys
 os.environ.setdefault("HERMES_HOME", "${dataDir}")
 from gateway.status import is_gateway_runtime_lock_active
