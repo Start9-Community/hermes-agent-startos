@@ -52,5 +52,4 @@ Connect Telegram, Discord, Signal, Slack, Matrix, and others from the dashboard'
 - **Privacy.** With a cloud provider, every prompt and its context is sent to that provider. Treat anything you type as visible to them. Use Ollama, vLLM, or llama.cpp to keep inference on-device.
 - **Destructive capability.** After _Login to StartOS_, the agent can run commands that uninstall services, change configuration, or render the server unusable. There is no built-in confirmation step; if you want that guardrail, don't run _Login to StartOS_. If you already granted access, run _Revoke StartOS Access_ to remove the stored `start-cli` authentication.
 - **Support docs scope.** The bundled knowledge covers StartOS, StartTunnel, and packages — not the s9pk Packaging book or Bitcoin Guides.
-- **Gateway status.** Hermes 0.21.6 may show the messaging gateway as stopped in its dashboard while the StartOS **Messaging Gateway** health check correctly shows it running.
 - **MCP.** Live StartOS tools over the Model Context Protocol are planned for a future release; for now server administration is via the `start-cli` skill.

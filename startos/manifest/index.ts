@@ -10,6 +10,7 @@ export const manifest = setupManifest({
   upstreamRepo: 'https://github.com/NousResearch/hermes-agent',
   marketingUrl: 'https://hermes-agent.nousresearch.com',
   donationUrl: null,
+  osVersion: '0.4.0.3',
   description: { short, long },
   volumes: ['main'],
   images: {
