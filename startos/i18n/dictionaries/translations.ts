@@ -90,6 +90,7 @@ export default {
     87: 'vLLM está seleccionado, pero no se pudo leer su clave de API de vllm:public/credentials.json. Asegúrese de que vLLM esté instalado, en ejecución y en una versión que publique sus credenciales públicas (>=0.16.0:0.1).',
     88: 'llama.cpp aún no es accesible en la red interna. Instale e inicie llama.cpp y vuelva a ejecutar "Configurar proveedor".',
     89: 'Selección de proveedor desconocida',
+    90: 'llama.cpp está seleccionado, pero su clave de API no se pudo leer desde llama-cpp:public/credentials.json. Asegúrese de que llama.cpp esté instalado, en ejecución y en una versión que publique su clave de API (>=11960:1).',
   },
   de_DE: {
     0: 'API-Schlüssel',
@@ -180,6 +181,7 @@ export default {
     87: 'vLLM ist ausgewählt, aber sein API-Schlüssel konnte nicht aus vllm:public/credentials.json gelesen werden. Stellen Sie sicher, dass vLLM installiert ist, läuft und eine Version hat, die ihre öffentlichen Zugangsdaten veröffentlicht (>=0.16.0:0.1).',
     88: 'llama.cpp ist im internen Netzwerk noch nicht erreichbar. Installieren und starten Sie llama.cpp und führen Sie dann „Anbieter konfigurieren“ erneut aus.',
     89: 'Unbekannte Anbieterauswahl',
+    90: 'llama.cpp ist ausgewählt, aber sein API-Schlüssel konnte nicht aus llama-cpp:public/credentials.json gelesen werden. Stellen Sie sicher, dass llama.cpp installiert ist, läuft und in einer Version vorliegt, die seinen API-Schlüssel veröffentlicht (>=11960:1).',
   },
   pl_PL: {
     0: 'Klucz API',
@@ -270,6 +272,7 @@ export default {
     87: 'Wybrano vLLM, ale nie udało się odczytać jego klucza API z vllm:public/credentials.json. Upewnij się, że vLLM jest zainstalowany, uruchomiony i w wersji, która publikuje swoje publiczne dane uwierzytelniające (>=0.16.0:0.1).',
     88: 'llama.cpp nie jest jeszcze osiągalny w sieci wewnętrznej. Zainstaluj i uruchom llama.cpp, a następnie ponownie uruchom „Konfiguruj dostawcę”.',
     89: 'Nieznany wybór dostawcy',
+    90: 'Wybrano llama.cpp, ale nie udało się odczytać jego klucza API z llama-cpp:public/credentials.json. Upewnij się, że llama.cpp jest zainstalowany, uruchomiony i w wersji publikującej swój klucz API (>=11960:1).',
   },
   fr_FR: {
     0: "Clé d'API",
@@ -360,5 +363,6 @@ export default {
     87: "vLLM est sélectionné, mais sa clé d'API n'a pas pu être lue depuis vllm:public/credentials.json. Vérifiez que vLLM est installé, en cours d'exécution et dans une version qui publie ses identifiants publics (>=0.16.0:0.1).",
     88: "llama.cpp n'est pas encore joignable sur le réseau interne. Installez et démarrez llama.cpp, puis exécutez de nouveau « Configurer le fournisseur ».",
     89: 'Sélection de fournisseur inconnue',
+    90: 'llama.cpp est sélectionné, mais sa clé d’API n’a pas pu être lue depuis llama-cpp:public/credentials.json. Vérifiez que llama.cpp est installé, en cours d’exécution et dans une version qui publie sa clé d’API (>=11960:1).',
   },
 } satisfies Record<string, LangDict>

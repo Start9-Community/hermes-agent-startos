@@ -13,7 +13,7 @@ const { InputSpec, Value, Variants } = sdk
 // xAI's API is OpenAI-compatible; routed as `custom` with this base URL.
 const GROK_BASE_URL = 'https://api.x.ai/v1'
 
-// Local-inference dependencies (ollama/vllm/llama-cpp) each export an
+// Local-inference dependencies (ollama/vllm) each export an
 // OpenAI-compatible `api` interface on a MultiHost named `api-multi`. Resolve
 // its plain-HTTP LXC-bridge base URL (e.g. `http://10.0.3.5:11434`) at apply
 // time — the retired `<pkg>.startos` DNS no longer resolves between containers.
@@ -21,6 +21,10 @@ const GROK_BASE_URL = 'https://api.x.ai/v1'
 // `-startos` packages whose id constants we could import.
 const DEP_API_HOST_ID = 'api-multi'
 const DEP_API_INTERFACE_ID = 'api'
+// llama.cpp gates `api-multi` with Basic auth for browsers; services reach its
+// Bearer-gated `api-key` host on the same internal port.
+const LLAMA_CPP_API_HOST_ID = 'api-key'
+const LLAMA_CPP_API_PORT = 8080
 
 const depApiBaseUrl = (effects: T.Effects, packageId: string) =>
   sdk.host
@@ -307,6 +311,9 @@ export const configureProvider = sdk.Action.withInput(
       default: string
     }
     const envPatch: Record<string, string | undefined> = {}
+    // Hermes routes `provider: llamacpp` to its own managed llama-server unless
+    // a `providers.llamacpp` entry names the endpoint; `model.base_url` alone is ignored.
+    let llamaCppProvider: { base_url: string; api_key: string } | undefined
     let codexOAuth:
       | Awaited<ReturnType<typeof requestCodexDeviceCode>>
       | undefined
@@ -350,22 +357,37 @@ export const configureProvider = sdk.Action.withInput(
         default: p.value.model,
       }
     } else if (p.selection === 'llama-cpp') {
-      const baseUrl = await depApiBaseUrl(effects, 'llama-cpp')
-      if (!baseUrl) {
+      const addr = await sdk.host
+        .getBridgeAddress(effects, {
+          packageId: 'llama-cpp',
+          hostId: LLAMA_CPP_API_HOST_ID,
+          internalPort: LLAMA_CPP_API_PORT,
+          ssl: false,
+        })
+        .once()
+      if (!addr) {
         throw new Error(
           i18n(
             'llama.cpp is not yet reachable on the internal network. Install and start llama.cpp, then run Configure Provider again.',
           ),
         )
       }
-      // llama.cpp runs keyless; its basic auth is enforced only at the OS
-      // reverse-proxy edge, so internal bridge connections need none.
+      const key = await readDependencyApiKey(effects, 'llama-cpp')
+      if (!key) {
+        throw new Error(
+          i18n(
+            'llama.cpp is selected but its API key could not be read from llama-cpp:public/credentials.json. Make sure llama.cpp is installed, running, and at a version that publishes its API key (>=11960:1).',
+          ),
+        )
+      }
+      const baseUrl = `http://${addr}/v1`
       model = {
         provider: 'llamacpp',
-        base_url: `${baseUrl}/v1`,
-        api_key: undefined,
+        base_url: baseUrl,
+        api_key: key,
         default: p.value.model,
       }
+      llamaCppProvider = { base_url: baseUrl, api_key: key }
     } else if (p.selection === 'openai-compatible') {
       model = {
         provider: 'custom',
@@ -408,7 +430,15 @@ export const configureProvider = sdk.Action.withInput(
       throw new Error(i18n('Unknown provider selection'))
     }
 
-    await configYaml.merge(effects, { model })
+    const staleLlamaCpp = await configYaml
+      .read((c) => c.providers?.llamacpp)
+      .once()
+    await configYaml.merge(effects, {
+      model,
+      ...(llamaCppProvider || staleLlamaCpp
+        ? { providers: { llamacpp: llamaCppProvider } }
+        : {}),
+    })
     if (Object.keys(envPatch).length > 0) await envFile.merge(effects, envPatch)
     await storeJson.merge(effects, {
       provider: p.selection,
