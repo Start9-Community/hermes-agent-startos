@@ -97,7 +97,7 @@ Three are declared optional, and **at most one is enabled** — whichever local 
 | ----------------- | ----------- | ------------------ | ------------ |
 | Ollama            | `ollama`    | `>=0.31.2:2`       | `primary`    |
 | vLLM              | `vllm`      | `>=0.23.1-rc.0:13` | `primary`    |
-| llama.cpp         | `llama-cpp` | `>=1.0.9994:1`     | `primary`    |
+| llama.cpp         | `llama-cpp` | `>=11960:1`        | `primary`    |
 | A cloud provider  | None        | —                  | —            |
 
 Choose a cloud or custom provider and this package depends on nothing.
@@ -148,6 +148,7 @@ Chooses and configures the LLM backend — a local runtime on this server, or a 
 - **What it changes:** the provider routing in `config.yaml`, credentials in `.env`, and the selection in the store for form pre-fill.
 - **Cost:** applies on restart; the declared dependency changes with it.
 - **API keys are never pre-filled.** A re-run asks for the key again, whatever else it pre-fills.
+- **vLLM and llama.cpp keys are read from the dependency**, from the key it publishes on its `public` volume, when the action runs. If that service later generates a new key, run Configure Provider again. llama.cpp is reached through its key-gated OpenAI-compatible API interface, and the endpoint is also written to `providers.llamacpp`, because Hermes otherwise routes `llamacpp` to its own managed server.
 - **Repeat safety:** idempotent.
 - **Choosing a cloud provider sends your conversations to it.** A local runtime keeps them on the box, at the cost of running the model yourself.
 - **One provider uses a device-code login**, which cannot complete in a single action — see below.

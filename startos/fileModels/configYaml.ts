@@ -35,6 +35,16 @@ const shape = z.looseObject({
       api_key: z.string().optional(),
     })
     .optional(),
+  providers: z
+    .looseObject({
+      llamacpp: z
+        .looseObject({
+          base_url: z.string().optional(),
+          api_key: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
   dashboard: z
     .looseObject({
       basic_auth: z

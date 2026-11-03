@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2026.10.23:0',
+  version: '2026.10.23:1',
   releaseNotes: {
     en_US:
-      'Updated Hermes Agent to 0.22.5, which fixes three vulnerabilities in image decoding (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Requires StartOS 0.4.0.3 or later.',
+      'Fixes the llama.cpp provider, whose requests failed with an authentication error on StartOS 0.4.1. Update llama.cpp first, then run Configure Provider again with llama.cpp selected.',
     es_ES:
-      'Hermes Agent actualizado a 0.22.5, que corrige tres vulnerabilidades en la decodificación de imágenes (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Requiere StartOS 0.4.0.3 o posterior.',
+      'Corrige el proveedor llama.cpp, cuyas solicitudes fallaban con un error de autenticación en StartOS 0.4.1. Actualice primero llama.cpp y luego vuelva a ejecutar Configurar proveedor con llama.cpp seleccionado.',
     de_DE:
-      'Hermes Agent auf 0.22.5 aktualisiert, das drei Sicherheitslücken bei der Bilddekodierung behebt (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Erfordert StartOS 0.4.0.3 oder neuer.',
+      'Behebt den Anbieter llama.cpp, dessen Anfragen unter StartOS 0.4.1 mit einem Authentifizierungsfehler scheiterten. Aktualisieren Sie zuerst llama.cpp und führen Sie dann „Anbieter konfigurieren“ mit ausgewähltem llama.cpp erneut aus.',
     pl_PL:
-      'Zaktualizowano Hermes Agent do wersji 0.22.5, która naprawia trzy podatności w dekodowaniu obrazów (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Wymaga StartOS 0.4.0.3 lub nowszego.',
+      'Naprawia dostawcę llama.cpp, którego żądania kończyły się błędem uwierzytelniania w StartOS 0.4.1. Najpierw zaktualizuj llama.cpp, a następnie ponownie uruchom akcję „Konfiguruj dostawcę” z wybranym llama.cpp.',
     fr_FR:
-      "Mise à jour de Hermes Agent vers 0.22.5, qui corrige trois vulnérabilités dans le décodage d'images (CVE-2026-112900, CVE-2026-112393, CVE-2026-112403). Nécessite StartOS 0.4.0.3 ou une version ultérieure.",
+      'Corrige le fournisseur llama.cpp, dont les requêtes échouaient avec une erreur d’authentification sous StartOS 0.4.1. Mettez d’abord llama.cpp à jour, puis relancez « Configurer le fournisseur » avec llama.cpp sélectionné.',
   },
   migrations: {
     up: async () => {},

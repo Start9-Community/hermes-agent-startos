@@ -89,6 +89,7 @@ const dict = {
   'vLLM is selected but its API key could not be read from vllm:public/credentials.json. Make sure vLLM is installed, running, and at a version that publishes its public credentials (>=0.16.0:0.1).': 87,
   'llama.cpp is not yet reachable on the internal network. Install and start llama.cpp, then run Configure Provider again.': 88,
   'Unknown provider selection': 89,
+  'llama.cpp is selected but its API key could not be read from llama-cpp:public/credentials.json. Make sure llama.cpp is installed, running, and at a version that publishes its API key (>=11960:1).': 90,
 } as const
 
 /**
